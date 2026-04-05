@@ -33,8 +33,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Hexagonal Architecture', link: '/patterns/architecture/hexagonal' },
-            { text: 'Clean Architecture', link: '/patterns/architecture/clean' },
-            { text: 'Microservices', link: '/patterns/architecture/microservices' },
+            { text: 'CQRS', link: '/patterns/architecture/cqrs' },
           ]
         },
         {
@@ -42,20 +41,17 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Event-Driven', link: '/patterns/async/event-driven' },
-            { text: 'CQRS', link: '/patterns/async/cqrs' },
-            { text: 'Event Sourcing', link: '/patterns/async/event-sourcing' },
             { text: 'Saga Pattern', link: '/patterns/async/saga' },
             { text: 'Outbox Pattern', link: '/patterns/async/outbox' },
           ]
         },
         {
-          text: 'Auth & Security',
+          text: 'Auth',
           collapsed: false,
           items: [
-            { text: 'OAuth 2.0 + PKCE', link: '/patterns/auth/oauth-pkce' },
+            { text: 'OAuth-PKCE Flow', link: '/patterns/auth/oauth-pkce' },
             { text: 'JWT Authentication', link: '/patterns/auth/jwt' },
-            { text: 'API Key Management', link: '/patterns/auth/api-keys' },
-            { text: 'RBAC', link: '/patterns/auth/rbac' },
+            { text: 'API Keys', link: '/patterns/auth/api-keys' },
           ]
         },
         {
@@ -63,45 +59,23 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Cache-Aside', link: '/patterns/caching/cache-aside' },
-            { text: 'Write-Through', link: '/patterns/caching/write-through' },
-            { text: 'Multi-Tier Caching', link: '/patterns/caching/multi-tier' },
           ]
         },
         {
           text: 'Observability',
           collapsed: false,
           items: [
-            { text: 'Distributed Tracing', link: '/patterns/observability/tracing' },
-            { text: 'Structured Logging', link: '/patterns/observability/logging' },
-            { text: 'Metrics Collection', link: '/patterns/observability/metrics' },
-          ]
-        },
-        {
-          text: 'Storage',
-          collapsed: false,
-          items: [
-            { text: 'Database Per Service', link: '/patterns/storage/db-per-service' },
-            { text: 'CQRS with Separate Stores', link: '/patterns/storage/cqrs-storage' },
-            { text: 'Event Store', link: '/patterns/storage/event-store' },
+            { text: 'Circuit Breaker', link: '/patterns/observability/circuit-breaker' },
+            { text: 'Retry Pattern', link: '/patterns/observability/retry' },
+            { text: 'Health Checks', link: '/patterns/observability/health-checks' },
+            { text: 'Graceful Degradation', link: '/patterns/observability/graceful-degradation' },
           ]
         },
         {
           text: 'Testing',
           collapsed: false,
           items: [
-            { text: 'Hexagonal Testing', link: '/patterns/testing/hexagonal' },
-            { text: 'Contract Testing', link: '/patterns/testing/contracts' },
-            { text: 'BDD with Gherkin', link: '/patterns/testing/bdd' },
-            { text: 'Property-Based Testing', link: '/patterns/testing/property' },
-          ]
-        },
-        {
-          text: 'CLI & Agents',
-          collapsed: false,
-          items: [
-            { text: 'CLI Structure', link: '/patterns/cli/structure' },
-            { text: 'Agent Patterns', link: '/patterns/agents/agent-patterns' },
-            { text: 'Plugin System', link: '/patterns/agents/plugins' },
+            { text: 'BDD with Cucumber', link: '/patterns/testing/bdd' },
           ]
         },
       ],
@@ -110,10 +84,6 @@ export default defineConfig({
           text: 'Anti-Patterns',
           items: [
             { text: 'Overview', link: '/anti-patterns/' },
-            { text: 'Spaghetti Architecture', link: '/anti-patterns/spaghetti' },
-            { text: 'God Objects', link: '/anti-patterns/god-objects' },
-            { text: 'Tight Coupling', link: '/anti-patterns/tight-coupling' },
-            { text: 'Premature Abstraction', link: '/anti-patterns/premature-abstraction' },
           ]
         }
       ],
@@ -122,10 +92,6 @@ export default defineConfig({
           text: 'Guidelines',
           items: [
             { text: 'Overview', link: '/guidelines/' },
-            { text: 'Code Standards', link: '/guidelines/code-standards' },
-            { text: 'Review Checklist', link: '/guidelines/review-checklist' },
-            { text: 'Documentation', link: '/guidelines/documentation' },
-            { text: 'Testing Requirements', link: '/guidelines/testing' },
           ]
         }
       ],
@@ -134,22 +100,6 @@ export default defineConfig({
           text: 'Checklists',
           items: [
             { text: 'Overview', link: '/checklists/' },
-            { text: 'Deployment', link: '/checklists/deployment' },
-            { text: 'Security', link: '/checklists/security' },
-            { text: 'Performance', link: '/checklists/performance' },
-            { text: 'Observability', link: '/checklists/observability' },
-          ]
-        }
-      ],
-      '/methodologies/': [
-        {
-          text: 'Methodologies',
-          items: [
-            { text: 'Overview', link: '/methodologies/' },
-            { text: 'TDD', link: '/methodologies/tdd' },
-            { text: 'BDD', link: '/methodologies/bdd' },
-            { text: 'DDD', link: '/methodologies/ddd' },
-            { text: 'ADR Process', link: '/methodologies/adr' },
           ]
         }
       ],
