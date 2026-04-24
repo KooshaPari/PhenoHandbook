@@ -5,9 +5,12 @@
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "test": "vitest run"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
+    "vitest": "^2.1.0",
     "vitepress": "^1.0.0"
   },
   "license": "MIT OR Apache-2.0"
