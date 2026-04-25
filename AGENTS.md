@@ -1,93 +1,25 @@
 # AGENTS.md — PhenoHandbook
 
-## Project Overview
+Phenotype repository
 
-- **Name**: PhenoHandbook (Engineering Handbook)
-- **Description**: Engineering handbook with guidelines, anti-patterns, and best practices for Phenotype ecosystem
-- **Location**: `/Users/kooshapari/CodeProjects/Phenotype/repos/PhenoHandbook`
-- **Language Stack**: Markdown, MkDocs, Python
-- **Published**: Public (GitHub Pages)
+## Quick Links
 
-## Quick Start
+- **Local CLAUDE.md:** See `CLAUDE.md` in this repository for project-specific guidance
+- **Phenotype org governance:** `/Users/kooshapari/CodeProjects/Phenotype/repos/CLAUDE.md`
+- **Global agent guidance:** `~/.claude/AGENTS.md`
+- **AgilePlus work tracking:** `cd /repos/AgilePlus && agileplus <command>`
 
-```bash
-# Navigate to project
-cd /Users/kooshapari/CodeProjects/Phenotype/repos/PhenoHandbook
+## Key Workflows
 
-# Install dependencies
-pip install -r requirements.txt
+1. **Before implementing:** Check AgilePlus for existing specs
+2. **Quality gates:** Run linters, tests, and docs validation (see CLAUDE.md)
+3. **Worktrees:** Use `repos/PhenoHandbook-wtrees/<topic>/` for feature work
+4. **Integration:** Commit to canonical repo (`main`) after quality gates pass
 
-# Serve locally
-mkdocs serve
+## Project-Specific Gotchas
 
-# Build
-mkdocs build
-```
+See CLAUDE.md for language stack, build commands, and testing requirements.
 
-## Architecture
+---
 
-### Handbook Structure
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     MkDocs Site                                    │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │                    Navigation                                   │ │
-│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐         │ │
-│  │  │ Guidelines │  │ Anti-      │  │ Checklists │         │ │
-│  │  │            │  │ Patterns   │  │            │         │ │
-│  │  └────────────┘  └────────────┘  └────────────┘         │ │
-│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐         │ │
-│  │  │ ADRs       │  │ Methods    │  │ Playbooks  │         │ │
-│  │  │            │  │            │  │            │         │ │
-│  │  └────────────┘  └────────────┘  └────────────┘         │ │
-│  └──────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Quality Standards
-
-### Documentation Quality
-
-- **Linter**: markdownlint
-- **Spell Check**: cspell
-- **Links**: markdown-link-check
-- **Vale**: Prose linting
-
-## Git Workflow
-
-### Branch Naming
-
-Format: `<type>/<section>/<description>`
-
-Examples:
-- `content/guidelines/add-code-review`
-- `fix/adr/update-decision-status`
-- `style/format/all-markdown`
-
-## CLI Commands
-
-```bash
-# Development
-mkdocs serve
-
-# Build
-mkdocs build
-
-# Deploy
-mkdocs gh-deploy
-```
-
-## Resources
-
-- [MkDocs](https://www.mkdocs.org/)
-- [Material Theme](https://squidfunk.github.io/mkdocs-material/)
-- [Phenotype Registry](https://github.com/KooshaPari/phenotype-registry)
-
-## Agent Notes
-
-**Critical Details:**
-- Handbook is reference material
-- ADRs linked from decisions
-- Keep guidelines actionable
-- Update with codebase changes
+**Parent contract:** Extends Phenotype-org governance. See `CLAUDE.md` and parent `AGENTS.md` for complete operating procedures.
