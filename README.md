@@ -1,8 +1,10 @@
-# PhenoHandbook - Patterns & Guidelines Registry
+# PhenoHandbook
 
-**Living documentation for design patterns, anti-patterns, guidelines, and best practices in the Phenotype ecosystem.**
+Living documentation for design patterns, anti-patterns, guidelines, and best practices across the Phenotype ecosystem. Serves as the central knowledge base for how to build software the "Phenotype way" — from architecture decisions to CI/CD practices.
 
-This repository serves as the **central knowledge base** for how to build software the "Phenotype way."
+## Overview
+
+PhenoHandbook is a community-driven patterns registry that captures collective knowledge about building resilient, scalable, and maintainable Phenotype applications. All patterns link to specifications in PhenoSpecs and inform template generation in HexaKit. The handbook is published as a searchable MkDocs site and serves as reference material for code reviews and architecture discussions.
 
 ---
 
@@ -136,8 +138,42 @@ All contributions must link to relevant specs in PhenoSpecs.
 
 ---
 
+## Technology Stack
+
+- **Documentation**: Markdown with YAML frontmatter for metadata
+- **Publishing**: MkDocs with Material theme
+- **Search**: Built-in full-text search via Material MkDocs
+- **Version Control**: Git; versioning per pattern
+- **CI/CD**: Auto-publish on push to main branch
+
+## Key Features
+
+- **Pattern-Driven**: 50+ design patterns organized by domain (auth, caching, async, observability, etc.)
+- **Anti-Pattern Catalog**: Document what NOT to do with remediation guidance
+- **Methodology Guides**: TDD, BDD, DDD, AI-DD workflows with step-by-step examples
+- **Checklist Library**: Pre-deployment, security, performance verification lists
+- **Spec Linking**: All patterns cross-reference PhenoSpecs for traceability
+- **Code Examples**: Rust, Python, TypeScript examples for each pattern
+- **Search**: Full-text search across all patterns and guidelines
+
+## Related Phenotype Projects
+
+- **[PhenoSpecs](../PhenoSpecs/)** — Formal specifications; patterns inform specs
+- **[HexaKit](../HexaKit/)** — Code generation templates; uses handbook patterns for scaffolding
+- **[AgilePlus](../AgilePlus/)** — Spec-driven work tracking; handbook linked in FR docs
+- **[phenotype-infrakit](../phenotype-infrakit/)** — Infrastructure patterns documented here
+
+## Governance & Contributing
+
+- **CLAUDE.md** — Contribution guidelines and pattern standards
+- **FUNCTIONAL_REQUIREMENTS.md** — Pattern catalog and coverage tracking
+- **docs/PATTERN_TEMPLATE.md** — Standard pattern format
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+
+All new patterns must link to at least one functional requirement or specification.
+
 ## Links
 
-- [PhenoSpecs](https://github.com/KooshaPari/PhenoSpecs) - Specifications
-- [HexaKit](https://github.com/KooshaPari/HexaKit) - Templates
-- [AgilePlus](https://github.com/KooshaPari/AgilePlus) - Spec-driven development
+- **[PhenoSpecs](https://github.com/KooshaPari/PhenoSpecs)** — Formal specifications and contracts
+- **[HexaKit](https://github.com/KooshaPari/HexaKit)** — Project templates and scaffolding
+- **[AgilePlus](https://github.com/KooshaPari/AgilePlus)** — Spec-driven development platform
