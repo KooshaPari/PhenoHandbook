@@ -177,3 +177,7 @@ All new patterns must link to at least one functional requirement or specificati
 - **[PhenoSpecs](https://github.com/KooshaPari/PhenoSpecs)** — Formal specifications and contracts
 - **[HexaKit](https://github.com/KooshaPari/HexaKit)** — Project templates and scaffolding
 - **[AgilePlus](https://github.com/KooshaPari/AgilePlus)** — Spec-driven development platform
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
