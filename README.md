@@ -1,5 +1,7 @@
 # PhenoHandbook
 
+**Status:** maintenance
+
 Living documentation for design patterns, anti-patterns, guidelines, and best practices across the Phenotype ecosystem. Serves as the central knowledge base for how to build software the "Phenotype way" — from architecture decisions to CI/CD practices.
 
 ## Overview
