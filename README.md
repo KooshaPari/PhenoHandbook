@@ -2,6 +2,10 @@
 
 **Status:** maintenance
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Quality Gate](https://github.com/KooshaPari/PhenoHandbook/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/KooshaPari/PhenoHandbook/actions/workflows/quality-gate.yml)
+[![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6.svg)](https://www.typescriptlang.org)
+
 Living documentation for design patterns, anti-patterns, guidelines, and best practices across the Phenotype ecosystem. Serves as the central knowledge base for how to build software the "Phenotype way" — from architecture decisions to CI/CD practices.
 
 ## Overview
