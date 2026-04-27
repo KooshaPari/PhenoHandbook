@@ -10,7 +10,7 @@ Living documentation for design patterns, anti-patterns, guidelines, and best pr
 
 ## Overview
 
-PhenoHandbook is a community-driven patterns registry that captures collective knowledge about building resilient, scalable, and maintainable Phenotype applications. All patterns link to specifications in PhenoSpecs and inform template generation in HexaKit. The handbook is published as a searchable MkDocs site and serves as reference material for code reviews and architecture discussions.
+PhenoHandbook is a community-driven patterns registry that captures collective knowledge about building resilient, scalable, and maintainable Phenotype applications. All patterns link to specifications in PhenoSpecs and inform template generation in HexaKit. The handbook is published as a searchable VitePress site and serves as reference material for code reviews and architecture discussions.
 
 ---
 
@@ -45,7 +45,7 @@ cat checklists/deployment.md
 | `guidelines/` | Coding standards | Style guides, review criteria, conventions |
 | `methodologies/` | Development workflows | TDD, BDD, DDD, xDD patterns |
 | `checklists/` | Verification lists | Pre-deployment, security, testing |
-| `mkdocs.yml` | Site config | For published documentation site |
+| `docs/.vitepress/config.mts` | Site config | For published documentation site |
 
 ---
 
@@ -122,10 +122,10 @@ This handbook is published as a documentation site:
 
 ```bash
 # Local preview
-mkdocs serve
+bun run docs:dev
 
 # Build
-mkdocs build
+bun run docs:build
 
 # Deploy
 git push origin main  # Auto-deploy via CI
@@ -147,8 +147,8 @@ All contributions must link to relevant specs in PhenoSpecs.
 ## Technology Stack
 
 - **Documentation**: Markdown with YAML frontmatter for metadata
-- **Publishing**: MkDocs with Material theme
-- **Search**: Built-in full-text search via Material MkDocs
+- **Publishing**: VitePress
+- **Search**: Built-in full-text search via VitePress
 - **Version Control**: Git; versioning per pattern
 - **CI/CD**: Auto-publish on push to main branch
 

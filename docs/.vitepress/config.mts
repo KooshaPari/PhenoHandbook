@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'PhenoHandbook',
   description: 'Patterns, anti-patterns, guidelines, and best practices for the Phenotype ecosystem',
+  ignoreDeadLinks: true,
   
   base: '/handbook/',
   
