@@ -11,5 +11,5 @@
 
 - Use the existing language-detection pattern in `Taskfile.yml`.
 - Route `build` to the `docs:build` script and `test` to the `test` script.
-- Implement `lint` as Markdown/config validation with transient CLI tools so the task is
-  useful even without a dedicated lint script in `package.json`.
+- Implement `lint` as a repo-wide Prettier check so the task covers the handbook's
+  Markdown, YAML, and TypeScript config surfaces without needing a dedicated lint script.
