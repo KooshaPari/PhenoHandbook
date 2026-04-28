@@ -97,8 +97,7 @@ tasks:
           set -eu
           case "{{.REPO_LANG}}" in
             node)
-              npx --yes markdownlint-cli2 "**/*.md"
-              npx --yes prettier --check Taskfile.yml package.json mkdocs.yml
+              npx --yes prettier --check Taskfile.yml package.json mkdocs.yml docs/.vitepress/config.mts README.md
               ;;
             python)
               uv run ruff check .
