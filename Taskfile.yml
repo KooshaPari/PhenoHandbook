@@ -33,6 +33,14 @@ vars:
         yarn) echo "yarn" ;;
         npm) echo "npm run" ;;
       esac
+  NODE_PRETTIER:
+    sh: |
+      case "{{.NODE_PM}}" in
+        bun) echo "bunx --yes prettier" ;;
+        pnpm) echo "pnpm dlx prettier" ;;
+        yarn) echo "yarn dlx prettier" ;;
+        npm) echo "npx --yes prettier" ;;
+      esac
 
 tasks:
   default:
@@ -115,7 +123,7 @@ tasks:
                   exit 0
                 fi
 
-                npx --yes prettier --check $existing
+                {{.NODE_PRETTIER}} --check $existing
               fi
               ;;
             python)
