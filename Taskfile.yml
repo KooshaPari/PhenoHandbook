@@ -1,0 +1,126 @@
+version: "3"
+
+vars:
+  REPO_LANG:
+    sh: |
+      if [ -f go.mod ]; then
+        echo go
+      elif [ -f Cargo.toml ]; then
+        echo rust
+      elif [ -f pyproject.toml ] || [ -f requirements.txt ] || [ -f setup.py ]; then
+        echo python
+      elif [ -f package.json ]; then
+        echo node
+      else
+        echo unknown
+      fi
+  NODE_PM:
+    sh: |
+      if [ -f bun.lockb ] || [ -f bun.lock ]; then
+        echo bun
+      elif [ -f pnpm-lock.yaml ]; then
+        echo pnpm
+      elif [ -f package-lock.json ]; then
+        echo npm
+      else
+        echo bun
+      fi
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  build:
+    desc: Build the repository using the detected language toolchain
+    cmds:
+      - cmd: |
+          set -eu
+          case "{{.REPO_LANG}}" in
+            node)
+              case "{{.NODE_PM}}" in
+                bun) bun run docs:build ;;
+                pnpm) pnpm run docs:build ;;
+                npm) npm run docs:build ;;
+              esac
+              ;;
+            python)
+              if [ -f pyproject.toml ]; then
+                uv run python -m build
+              else
+                python -m compileall .
+              fi
+              ;;
+            go)
+              go build ./...
+              ;;
+            rust)
+              cargo build --all-targets
+              ;;
+            *)
+              echo "Unsupported repository language: {{.REPO_LANG}}" >&2
+              exit 1
+              ;;
+          esac
+
+  test:
+    desc: Run the repository test suite using the detected language toolchain
+    cmds:
+      - cmd: |
+          set -eu
+          case "{{.REPO_LANG}}" in
+            node)
+              case "{{.NODE_PM}}" in
+                bun) bun run test ;;
+                pnpm) pnpm test ;;
+                npm) npm test ;;
+              esac
+              ;;
+            python)
+              uv run pytest
+              ;;
+            go)
+              go test ./...
+              ;;
+            rust)
+              cargo test
+              ;;
+            *)
+              echo "Unsupported repository language: {{.REPO_LANG}}" >&2
+              exit 1
+              ;;
+          esac
+
+  lint:
+    desc: Validate repository metadata and task definitions
+    cmds:
+      - cmd: |
+          set -eu
+          case "{{.REPO_LANG}}" in
+            node)
+              case "{{.NODE_PM}}" in
+                bun) npx --yes prettier --check Taskfile.yml package.json ;;
+                pnpm) npx --yes prettier --check Taskfile.yml package.json ;;
+                npm) npx --yes prettier --check Taskfile.yml package.json ;;
+              esac
+              ;;
+            python)
+              uv run ruff check .
+              ;;
+            go)
+              go vet ./...
+              ;;
+            rust)
+              cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings
+              ;;
+            *)
+              echo "Unsupported repository language: {{.REPO_LANG}}" >&2
+              exit 1
+              ;;
+          esac
+
+  clean:
+    desc: Remove generated build, test, and cache artifacts
+    cmds:
+      - rm -rf node_modules docs/.vitepress/dist docs/.vitepress/cache coverage .turbo .task *.tsbuildinfo
