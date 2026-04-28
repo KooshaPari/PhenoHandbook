@@ -33,6 +33,14 @@ vars:
         yarn) echo "yarn" ;;
         npm) echo "npm run" ;;
       esac
+  NODE_INSTALL:
+    sh: |
+      case "{{.NODE_PM}}" in
+        bun) echo "bun install" ;;
+        pnpm) echo "pnpm install" ;;
+        yarn) echo "yarn install" ;;
+        npm) echo "npm install --no-package-lock --no-audit --no-fund" ;;
+      esac
   NODE_PRETTIER:
     sh: |
       case "{{.NODE_PM}}" in
@@ -55,6 +63,9 @@ tasks:
           set -eu
           case "{{.REPO_LANG}}" in
             node)
+              if [ ! -d node_modules ]; then
+                {{.NODE_INSTALL}}
+              fi
               {{.NODE_RUN}} docs:build
               ;;
             python)
@@ -83,6 +94,9 @@ tasks:
           set -eu
           case "{{.REPO_LANG}}" in
             node)
+              if [ ! -d node_modules ]; then
+                {{.NODE_INSTALL}}
+              fi
               {{.NODE_RUN}} test
               ;;
             python)
@@ -107,6 +121,9 @@ tasks:
           set -eu
           case "{{.REPO_LANG}}" in
             node)
+              if [ ! -d node_modules ]; then
+                {{.NODE_INSTALL}}
+              fi
               if node -e 'process.exit(require("./package.json").scripts?.lint ? 0 : 1)'; then
                 {{.NODE_RUN}} lint
               else
