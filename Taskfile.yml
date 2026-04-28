@@ -118,4 +118,4 @@ tasks:
     desc: Remove generated build, test, and cache artifacts
     cmds:
       - rm -rf node_modules docs/.vitepress/dist docs/.vitepress/cache \
-          docs/.vitepress/.temp coverage .turbo .task *.tsbuildinfo
+        docs/.vitepress/.temp coverage .turbo .task *.tsbuildinfo
