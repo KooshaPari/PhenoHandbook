@@ -56,16 +56,55 @@ tasks:
     cmds:
       - task --list
 
+  ensure-node-deps:
+    internal: true
+    cmds:
+      - cmd: |
+          set -eu
+          if [ "{{.REPO_LANG}}" != "node" ]; then
+            exit 0
+          fi
+
+          ready="node_modules/.task-deps-ready"
+          if [ -f "$ready" ]; then
+            exit 0
+          fi
+
+          mkdir -p .task
+          lock=".task/node-install.lock"
+          waited=0
+          while ! mkdir "$lock" 2>/dev/null; do
+            if [ -f "$ready" ]; then
+              exit 0
+            fi
+            if [ "$waited" -ge 120 ]; then
+              echo "Timed out waiting for Node dependency installation lock" >&2
+              exit 1
+            fi
+            sleep 1
+            waited=$((waited + 1))
+          done
+
+          status=0
+          if [ ! -f "$ready" ]; then
+            {{.NODE_INSTALL}} || status=$?
+            if [ "$status" -eq 0 ]; then
+              touch "$ready"
+            fi
+          fi
+
+          rmdir "$lock"
+          exit "$status"
+
   build:
     desc: Build the repository using the detected language toolchain
+    deps:
+      - ensure-node-deps
     cmds:
       - cmd: |
           set -eu
           case "{{.REPO_LANG}}" in
             node)
-              if [ ! -d node_modules ]; then
-                {{.NODE_INSTALL}}
-              fi
               {{.NODE_RUN}} docs:build
               ;;
             python)
@@ -89,14 +128,13 @@ tasks:
 
   test:
     desc: Run the repository test suite using the detected language toolchain
+    deps:
+      - ensure-node-deps
     cmds:
       - cmd: |
           set -eu
           case "{{.REPO_LANG}}" in
             node)
-              if [ ! -d node_modules ]; then
-                {{.NODE_INSTALL}}
-              fi
               {{.NODE_RUN}} test
               ;;
             python)
@@ -116,14 +154,13 @@ tasks:
 
   lint:
     desc: Run lint checks using the detected language toolchain
+    deps:
+      - ensure-node-deps
     cmds:
       - cmd: |
           set -eu
           case "{{.REPO_LANG}}" in
             node)
-              if [ ! -d node_modules ]; then
-                {{.NODE_INSTALL}}
-              fi
               if node -e 'process.exit(require("./package.json").scripts?.lint ? 0 : 1)'; then
                 {{.NODE_RUN}} lint
               else
