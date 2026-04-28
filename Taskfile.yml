@@ -91,13 +91,13 @@ tasks:
           esac
 
   lint:
-    desc: Validate repository Markdown, configuration, and task definitions
+    desc: Validate core repo config and toolchain files
     cmds:
       - cmd: |
           set -eu
           case "{{.REPO_LANG}}" in
             node)
-              npx --yes prettier --check Taskfile.yml package.json mkdocs.yml docs/.vitepress/config.mts README.md
+              npx --yes prettier --check Taskfile.yml package.json mkdocs.yml docs/.vitepress/config.mts docs/guides/tooling.md
               ;;
             python)
               uv run ruff check .
@@ -118,4 +118,4 @@ tasks:
     desc: Remove generated build, test, and cache artifacts
     cmds:
       - rm -rf node_modules docs/.vitepress/dist docs/.vitepress/cache \
-          docs/.vitepress/.temp coverage .turbo .task *.tsbuildinfo
+        docs/.vitepress/.temp coverage .turbo .task *.tsbuildinfo
