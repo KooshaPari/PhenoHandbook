@@ -102,7 +102,20 @@ tasks:
               if node -e 'process.exit(require("./package.json").scripts?.lint ? 0 : 1)'; then
                 {{.NODE_RUN}} lint
               else
-                npx --yes prettier --check Taskfile.yml package.json mkdocs.yml docs/.vitepress/config.mts docs/guides/tooling.md
+                files="Taskfile.yml package.json mkdocs.yml vitest.config.ts README.md docs/guides/tooling.md"
+                existing=""
+                for file in $files; do
+                  if [ -f "$file" ]; then
+                    existing="$existing $file"
+                  fi
+                done
+
+                if [ -z "$existing" ]; then
+                  echo "No lintable files found"
+                  exit 0
+                fi
+
+                npx --yes prettier --check $existing
               fi
               ;;
             python)
