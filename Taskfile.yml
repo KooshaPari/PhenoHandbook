@@ -36,6 +36,15 @@ vars:
         npm-lock) echo "npm run" ;;
         npm) echo "npm run" ;;
       esac
+  NODE_BUILD_SCRIPT:
+    sh: |
+      if node -e 'const s = require("./package.json").scripts || {}; process.exit(s.build ? 0 : 1)'; then
+        echo build
+      elif node -e 'const s = require("./package.json").scripts || {}; process.exit(s["docs:build"] ? 0 : 1)'; then
+        echo docs:build
+      else
+        echo ""
+      fi
   NODE_INSTALL:
     sh: |
       case "{{.NODE_PM}}" in
@@ -127,7 +136,11 @@ tasks:
           set -eu
           case "{{.REPO_LANG}}" in
             node)
-              {{.NODE_RUN}} docs:build
+              if [ -z "{{.NODE_BUILD_SCRIPT}}" ]; then
+                echo "No Node build script found in package.json" >&2
+                exit 1
+              fi
+              {{.NODE_RUN}} {{.NODE_BUILD_SCRIPT}}
               ;;
             python)
               if [ -f pyproject.toml ]; then
