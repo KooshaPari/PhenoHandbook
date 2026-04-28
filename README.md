@@ -38,14 +38,14 @@ cat checklists/deployment.md
 
 ## Registry Structure
 
-| Directory | Purpose | Contents |
-|-----------|---------|----------|
-| `patterns/` | Design patterns by domain | Async, caching, auth, observability, etc. |
-| `anti-patterns/` | What NOT to do | Common mistakes and their fixes |
-| `guidelines/` | Coding standards | Style guides, review criteria, conventions |
-| `methodologies/` | Development workflows | TDD, BDD, DDD, xDD patterns |
-| `checklists/` | Verification lists | Pre-deployment, security, testing |
-| `mkdocs.yml` | Site config | For published documentation site |
+| Directory        | Purpose                   | Contents                                   |
+| ---------------- | ------------------------- | ------------------------------------------ |
+| `patterns/`      | Design patterns by domain | Async, caching, auth, observability, etc.  |
+| `anti-patterns/` | What NOT to do            | Common mistakes and their fixes            |
+| `guidelines/`    | Coding standards          | Style guides, review criteria, conventions |
+| `methodologies/` | Development workflows     | TDD, BDD, DDD, xDD patterns                |
+| `checklists/`    | Verification lists        | Pre-deployment, security, testing          |
+| `mkdocs.yml`     | Site config               | For published documentation site           |
 
 ---
 
@@ -53,38 +53,46 @@ cat checklists/deployment.md
 
 Each pattern follows this structure:
 
-```markdown
+````markdown
 # Pattern Name
 
 ## Summary
+
 One-sentence description.
 
 ## Problem
+
 What problem does this solve?
 
 ## Solution
+
 How to implement it.
 
 ## Example
+
 ```rust
 // Good example
 ```
 
 ## When to Use
+
 - When X happens
 - When Y is needed
 
 ## When NOT to Use
+
 - When Z applies
 
 ## Related Patterns
+
 - [Related Pattern](./related.md)
 - SPEC-AUTH-001 (links to spec)
 
 ## References
+
 - Links to ADRs
 - External resources
-```
+````
 
 ---
 
@@ -102,15 +110,15 @@ Patterns in this handbook inform:
 
 From [xDD_METHODOLOGIES.md](https://github.com/KooshaPari/xDD_METHODOLOGIES.md):
 
-| Methodology | When to Use |
-|-------------|-------------|
-| TDD | Unit-level logic |
-| BDD | Feature scenarios |
-| DDD | Complex domains |
-| SDD | Spec-first projects |
-| FDD | Feature-centric work |
-| CDD | API contracts |
-| AI-DD | AI-assisted coding |
+| Methodology | When to Use          |
+| ----------- | -------------------- |
+| TDD         | Unit-level logic     |
+| BDD         | Feature scenarios    |
+| DDD         | Complex domains      |
+| SDD         | Spec-first projects  |
+| FDD         | Feature-centric work |
+| CDD         | API contracts        |
+| AI-DD       | AI-assisted coding   |
 
 See `methodologies/` for detailed workflows.
 
