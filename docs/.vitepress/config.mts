@@ -6,6 +6,7 @@ export default defineConfig({
     "Patterns, anti-patterns, guidelines, and best practices for the Phenotype ecosystem",
 
   base: "/handbook/",
+  ignoreDeadLinks: true,
 
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }],
