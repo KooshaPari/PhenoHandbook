@@ -20,10 +20,8 @@ vars:
         echo bun
       elif [ -f pnpm-lock.yaml ]; then
         echo pnpm
-      elif [ -f package-lock.json ]; then
-        echo npm
       else
-        echo bun
+        echo npm
       fi
 
 tasks:
@@ -93,17 +91,14 @@ tasks:
           esac
 
   lint:
-    desc: Validate repository metadata and task definitions
+    desc: Validate repository Markdown, configuration, and task definitions
     cmds:
       - cmd: |
           set -eu
           case "{{.REPO_LANG}}" in
             node)
-              case "{{.NODE_PM}}" in
-                bun) npx --yes prettier --check Taskfile.yml package.json ;;
-                pnpm) npx --yes prettier --check Taskfile.yml package.json ;;
-                npm) npx --yes prettier --check Taskfile.yml package.json ;;
-              esac
+              npx --yes markdownlint-cli2 "**/*.md"
+              npx --yes prettier --check Taskfile.yml package.json mkdocs.yml
               ;;
             python)
               uv run ruff check .
@@ -123,4 +118,5 @@ tasks:
   clean:
     desc: Remove generated build, test, and cache artifacts
     cmds:
-      - rm -rf node_modules docs/.vitepress/dist docs/.vitepress/cache coverage .turbo .task *.tsbuildinfo
+      - rm -rf node_modules docs/.vitepress/dist docs/.vitepress/cache \
+          docs/.vitepress/.temp coverage .turbo .task *.tsbuildinfo
