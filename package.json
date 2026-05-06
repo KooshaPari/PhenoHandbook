@@ -1,6 +1,7 @@
 {
   "name": "pheno-handbook",
   "version": "1.0.0",
+  "private": true,
   "description": "Phenotype Handbook - Patterns, guidelines, and best practices",
   "scripts": {
     "docs:dev": "vitepress dev docs",
