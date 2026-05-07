@@ -19,5 +19,6 @@
     "node": ">=18",
     "bun": ">=1.0"
   },
-  "license": "MIT OR Apache-2.0"
+  "license": "MIT OR Apache-2.0",
+  "packageManager": "bun@1"
 }
