@@ -2,7 +2,7 @@
 
 **Project:** PhenoHandbook  
 **Status:** Active  
-**Last Updated:** 2026-04-05
+**Last Updated:** 2026-05-25
 
 ---
 
@@ -74,26 +74,26 @@ Create an ADR when:
 
 | ID | Title | Status | Date | Author |
 |----|-------|--------|------|--------|
-| ADR-001 | [Project Architecture Overview](adr/ADR-001-Project-Architecture.md) | Accepted | 2026-04-05 | TBD |
-| ADR-002 | [Technology Stack Selection](adr/ADR-002-Technology-Stack.md) | Proposed | 2026-04-05 | TBD |
-| ADR-003 | [Data Storage Strategy](adr/ADR-003-Data-Storage.md) | Proposed | 2026-04-05 | TBD |
-| ADR-004 | [API Design Principles](adr/ADR-004-API-Design.md) | Proposed | 2026-04-05 | TBD |
-| ADR-005 | [Authentication & Authorization](adr/ADR-005-Auth-Strategy.md) | Proposed | 2026-04-05 | TBD |
-| ADR-006 | [Deployment Architecture](adr/ADR-006-Deployment.md) | Proposed | 2026-04-05 | TBD |
-| ADR-007 | [Monitoring & Observability](adr/ADR-007-Monitoring.md) | Proposed | 2026-04-05 | TBD |
-| ADR-008 | [Security Architecture](adr/ADR-008-Security.md) | Proposed | 2026-04-05 | TBD |
-| ADR-009 | [Performance Strategy](adr/ADR-009-Performance.md) | Proposed | 2026-04-05 | TBD |
-| ADR-010 | [Testing Approach](adr/ADR-010-Testing.md) | Proposed | 2026-04-05 | TBD |
+| ADR-001 | [Hexagonal Architecture as Foundational Pattern](adrs/001-hexagonal-architecture.md) | Accepted | 2026-04-04 | KooshaPari |
+| ADR-002 | [Technology Stack Selection](adrs/002-technology-stack.md) | Accepted | 2026-05-25 | KooshaPari |
+| ADR-003 | [Data Storage Strategy](adrs/003-data-storage.md) | Accepted | 2026-05-25 | KooshaPari |
+| ADR-004 | [API Design Principles](adrs/004-api-design.md) | Accepted | 2026-05-25 | KooshaPari |
+| ADR-005 | [Authentication & Authorization](adrs/005-auth-strategy.md) | Accepted | 2026-05-25 | KooshaPari |
+| ADR-006 | [Deployment Architecture](adrs/006-deployment.md) | Accepted | 2026-05-25 | KooshaPari |
+| ADR-007 | [Monitoring & Observability](adrs/007-monitoring.md) | Accepted | 2026-05-25 | KooshaPari |
+| ADR-008 | [Security Architecture](adrs/008-security.md) | Accepted | 2026-05-25 | KooshaPari |
+| ADR-009 | [Performance Strategy](adrs/ADR-009-Performance.md) | Proposed | 2026-04-05 | TBD |
+| ADR-010 | [Testing Approach](adrs/ADR-010-Testing.md) | Proposed | 2026-04-05 | TBD |
 
 ### Status Summary
 
 ```
 Status Distribution:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Accepted:     ████████░░░░░░░░░░░░  1 (10%)
-Proposed:     ████████████████████  9 (90%)
+Accepted:     ████████████████░░░░  8 (80%)
+Proposed:     ████░░░░░░░░░░░░░░░░  2 (20%)
 Under Review: ░░░░░░░░░░░░░░░░░░░░  0 (0%)
-Deprecated: ░░░░░░░░░░░░░░░░░░░░  0 (0%)
+Deprecated:   ░░░░░░░░░░░░░░░░░░░░  0 (0%)
 Superseded:   ░░░░░░░░░░░░░░░░░░░░  0 (0%)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total: 10
@@ -494,6 +494,7 @@ Rationale: [Explanation based on criteria weights]
 |------|--------|--------|
 | 2026-04-05 | Initial ADR index created | Automated |
 | 2026-04-05 | ADR-001 accepted | TBD |
+| 2026-05-25 | ADR-002 through ADR-008 accepted — retroactive ratification of deployed stack | KooshaPari |
 
 ---
 
