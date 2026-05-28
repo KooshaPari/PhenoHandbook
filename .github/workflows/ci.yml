@@ -12,6 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
       - uses: actions/setup-node@0355742c943ddb13ca8a6b700f824231caa91e75 # v4
-        with: { node-version: '20', cache: 'npm' }
+        with: { node-version: '20' }
       - run: npm install
       - run: npm test 2>/dev/null || npm run test:unit 2>/dev/null || echo "no tests"
