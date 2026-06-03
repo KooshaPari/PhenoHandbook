@@ -1,3 +1,6 @@
+> **Work state:** ACTIVE · **Progress:** `████████░░ 80%`
+> CONVENTIONS home — real org patterns encoded (tooling/xDD/delegation/CI/stack/traceability) + 4-role spine-roles · updated 2026-06-02
+
 # PhenoHandbook
 
 **Status:** maintenance
