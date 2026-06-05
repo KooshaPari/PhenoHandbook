@@ -1,131 +1,223 @@
-#!/usr/bin/env sh
+#!/bin/sh
+# Phenotype org governance - happy-path-collapse guard. See docs/governance/happy-path-checklist.md for the rules.
 
 set -eu
 
-DIFF_CMD="${PRECOMMIT_DIFF_CMD:-git diff --cached -U0 --no-color}"
-USER_CONFIRM_TOKENS="${PRECOMMIT_USER_CONFIRM_TOKENS:-getUserConfirmation|get_user_confirmation|user confirmation|user confirmed|confirmed by user|requires user confirmation|awaiting user confirmation|awaiting user|user-approved|user approved|user approval}"
-LAST_LINK_TOKENS="${PRECOMMIT_LAST_LINK_TOKENS:-hash|version|sha|sha1|sha256|artifact|artifact-id|run-id|build-id|trace|trace_id|log|screenshot|url|link|banner|checksum|provenance|running output|runtime output|verify output}"
-PERF_SIZE_TOKENS="${PRECOMMIT_PERF_SIZE_TOKENS:-size|bundle|framems|frame ms|frame|latency|throughput|p95|p99|qps|rps|fps|ms|sec|s|mb|gb|kb|bytes|memory|cpu|heap|rss|load|build time|duration}"
-BLUNT_FORCE_WORDS="${PRECOMMIT_BLUNT_FORCE_WORDS:-retry|backoff|scale|multiplier|factor|timeout|delay|sleep|buffer|pool|batch|window|threshold|limit|max|min}"
-ITER_COUNT_TOKENS="${PRECOMMIT_ITER_COUNT_TOKENS:-iter|iterate|iteration|itercount|retrycount|retry|retries|attempt|attempts}"
-ITER_COUNT_LIMIT="${PRECOMMIT_ITER_COUNT_LIMIT:-10}"
-SUSPICIOUS_NUMBER_LIMIT="${PRECOMMIT_SUSPICIOUS_NUMBER_LIMIT:-999}"
-STALENESS_TOKENS="${PRECOMMIT_STALE_TOKENS:-stale|stale-code|stale code|cached|cache|outdated|old build|old output}"
-STALE_CLEAR_TOKENS="${PRECOMMIT_STALE_CLEAR_TOKENS:-kill-stale|clear cache|cache clear|cache_bust|cache-bust|hash|version|banner|hashes|sha|checksum|artifact|running output|runtime output}"
-FLAG_TOKENS="${PRECOMMIT_FLAG_TOKENS:-flag|enabled|toggle|feature|todo}"
+HAPPY_PATH_FAIL_ON="${HAPPY_PATH_FAIL_ON:-block}"
+HAPPY_PATH_DISABLE="${HAPPY_PATH_DISABLE:-}"
+HAPPY_PATH_BIG_CONSTANT_ALLOW="${HAPPY_PATH_BIG_CONSTANT_ALLOW:-}"
 
-has_match() {
-  text="$1"
-  pattern="$2"
-  printf "%s" "$text" | grep -iqE "$pattern"
-}
-
-has_large_number() {
-  text="$1"
-  limit="$2"
-
-  for n in $(printf "%s" "$text" | tr -c '0-9' ' '); do
-    [ -z "$n" ] && continue
-    if [ "$n" -ge "$limit" ] 2>/dev/null; then
-      return 0
-    fi
-  done
-  return 1
-}
-
-emit() {
-  file="$1"
-  line_no="$2"
-  rule="$3"
-  detail="$4"
-  action="$5"
-  VIOLATIONS=$((VIOLATIONS + 1))
-  printf "[%d] %s:%s | %s\n    %s\n    -> %s\n\n" "$VIOLATIONS" "$file" "$line_no" "$rule" "$detail" "$action" >&2
-}
-
-DIFF_OUTPUT=$($DIFF_CMD)
-if [ -z "$DIFF_OUTPUT" ]; then
-  echo "[ok] No staged diff found. Happy-path guard skipped."
+mode=$(printf '%s' "$HAPPY_PATH_FAIL_ON" | tr 'A-Z' 'a-z')
+if [ "$mode" = "off" ]; then
   exit 0
 fi
 
-tmp_diff=$(mktemp)
-trap 'rm -f "$tmp_diff"' EXIT
-printf '%s\n' "$DIFF_OUTPUT" > "$tmp_diff"
+tmp_diff="$(mktemp)"
+git diff --cached --no-color --unified=3 > "$tmp_diff"
 
-VIOLATIONS=0
-current_file=""
-hunk_line=-1
-
-while IFS= read -r raw_line; do
-  case "$raw_line" in
-    diff\ --git\ *)
-      ;;
-    ---\ a/*)
-      ;;
-    +++\ b/*)
-      current_file="${raw_line#+++ b/}"
-      ;;
-    @@*)
-      hunk_line=$(printf "%s" "$raw_line" | sed -n 's/^@@ -[0-9][0-9]*,\?[0-9][0-9]* \+\([0-9][0-9]*\).*/\1/p')
-      if [ -z "$hunk_line" ]; then
-        hunk_line=$(printf "%s" "$raw_line" | sed -n 's/^@@ -[0-9][0-9]* \+\([0-9][0-9]*\).*/\1/p')
-      fi
-      ;;
-    +*)
-      if [ -z "$current_file" ] || [ -z "$hunk_line" ] || [ "$hunk_line" -lt 0 ]; then
-        continue
-      fi
-
-      line_text="${raw_line#\+}"
-      line_no=$hunk_line
-      hunk_line=$((hunk_line + 1))
-
-      line_lower=$(printf "%s" "$line_text" | tr '[:upper:]' '[:lower:]')
-      confirmed=0
-      has_match "$line_lower" "$USER_CONFIRM_TOKENS" && confirmed=1
-
-      if has_match "$line_lower" "✅|\\bdone\\b|\\bfixed\\b|\\bresolved\\b|\\bpass(ing|ed)?\\b|\\bcompleted\\b|\\bworks\\b" && [ "$confirmed" -eq 0 ]; then
-        emit "$current_file" "$line_no" "Rule 1: user's eyes" "User-facing claim detected without explicit confirmation token." "Add getUserConfirmation or user-confirmed approval in staged diff."
-      fi
-
-      if has_match "$line_lower" "telemetry|\\bmetric\\b|\\bstatus\\s*[:=]\s*ok\\b|\\bpassed\\b|\\b200\\b|\\bbuild ok\\b" && ! has_match "$line_lower" "$LAST_LINK_TOKENS"; then
-        emit "$current_file" "$line_no" "Rule 3: telemetry ≠ truth" "Success marker appears telemetry-only with no last-link outcome evidence." "Add artifact/hash/version/trace/log links or explicit runtime evidence."
-      fi
-
-      if has_match "$line_lower" "$BLUNT_FORCE_WORDS" && has_large_number "$line_lower" "$SUSPICIOUS_NUMBER_LIMIT" && [ "$confirmed" -eq 0 ]; then
-        emit "$current_file" "$line_no" "Rule 5: root-cause" "Large numeric assignment/multiplier appears without root-cause context." "Prefer root-cause fix; attach measurement rationale if numeric clamp is required."
-      fi
-
-      if has_match "$line_lower" "$ITER_COUNT_TOKENS" && has_large_number "$line_lower" "$ITER_COUNT_LIMIT" && [ "$confirmed" -eq 0 ]; then
-        emit "$current_file" "$line_no" "Rule 7: don't grind" "Iteration/retry threshold appears high without confirmed win signal." "Bound loops with user confirmation and observed exit condition."
-      fi
-
-      if has_match "$line_lower" "\\b(build|test|lint|bundle|deploy|pack)\\b" && has_match "$line_lower" "\\bpass(ed)?\\b|\\bok\\b|\\bsucceeded\\b|\\bsuccess(ful|fully)?\\b" && ! has_match "$line_lower" "$PERF_SIZE_TOKENS"; then
-        emit "$current_file" "$line_no" "Rule 6: size/perf/robustness" "Build/test claim has no size/frameMs/perf evidence." "Append artifact size + frameMs/latency + stability metric evidence."
-      fi
-
-      if has_match "$line_lower" "$STALENESS_TOKENS" && has_match "$line_lower" "\\bfix\\b|\\bfixed\\b|\\bvalidated\\b|\\bverified\\b|\\btested\\b|\\bbuild\\b" && ! has_match "$line_lower" "$STALE_CLEAR_TOKENS" && [ "$confirmed" -eq 0 ]; then
-        emit "$current_file" "$line_no" "Rule 2 / stale-code risk" "Stale/freshness claim lacks cache-kill/hash/version/banner tokens." "Call kill-stale/clear cache path and include version/hash from runtime output."
-      fi
-
-      if has_match "$line_lower" "${FLAG_TOKENS}.*\\b(false|off|disable)\\b|\\b(false|off|disable)\\b.*${FLAG_TOKENS}|TODO" && [ "$confirmed" -eq 0 ]; then
-        emit "$current_file" "$line_no" "Pitfall: motion without result" "Feature flag/default-disabled path may be shipping as final state." "Do not mark final pass on TODO or false flags; add confirmation and rollout evidence."
-      fi
-
-      if has_match "$line_lower" "\\*=[[:space:]]*[0-9]{2,}|/[[:space:]]*[0-9]{2,}|\\^[0-9]{2,}" && has_match "$line_lower" "$BLUNT_FORCE_WORDS" && [ "$confirmed" -eq 0 ]; then
-        emit "$current_file" "$line_no" "Rule 5: root-cause" "Scale operator with high numeric literal appears." "Document why this scaling is required and expected effect from telemetry evidence."
-      fi
-      ;;
-    *)
-      ;;
-  esac
-done < "$tmp_diff"
-
-if [ "$VIOLATIONS" -ne 0 ]; then
-  echo "[fail] Happy-path guard blocked commit. Review findings above." >&2
-  exit 1
+if [ ! -s "$tmp_diff" ]; then
+  rm -f "$tmp_diff"
+  exit 0
 fi
 
-echo "[ok] Happy-path guard passed on staged diff."
-exit 0
+awk -v disable="$HAPPY_PATH_DISABLE" \
+    -v allow="$HAPPY_PATH_BIG_CONSTANT_ALLOW" \
+    -v mode="$mode" '
+function trim(s) { sub(/^[[:space:]]+/, "", s); sub(/[[:space:]]+$/, "", s); return s }
+
+function split_list(raw,    i, n, arr, out, t) {
+  n = split(raw, arr, ",")
+  out = ""
+  for (i = 1; i <= n; i++) {
+    t = tolower(trim(arr[i]))
+    if (t != "") out = out " " t
+  }
+  return out
+}
+
+function is_disabled(rule,    i, token, list, arr, n) {
+  list = split_list(disable)
+  n = split(list, arr, " ")
+  rule = tolower(rule)
+  for (i = 1; i <= n; i++) {
+    token = arr[i]
+    if (token == "") continue
+    if (token == rule || token == "rule" substr(rule,2) || token == "r" substr(rule,2)) return 1
+  }
+  return 0
+}
+
+function has_allow(line,    i, token, list, arr, n) {
+  list = split_list(allow)
+  n = split(list, arr, " ")
+  for (i = 1; i <= n; i++) {
+    token = arr[i]
+    if (token == "") continue
+    if (index(line, token) > 0) return 1
+  }
+  return 0
+}
+
+function window_has(idx, pattern,    i, s) {
+  for (i = idx; i <= idx + 2; i++) {
+    if (i > total_lines) break
+    s = diff_lines[i]
+    if (tolower(s) ~ pattern) return 1
+  }
+  return 0
+}
+
+function emit(level, rule, file, line_no, msg, snippet) {
+  if (level == "FAIL") {
+    fail_count++
+  } else {
+    warn_count++
+  }
+  print level " [" toupper(rule) "] " msg " at " file ":" line_no " -> " snippet
+}
+
+function report(rule, file, line_no, snippet, msg,    lvl) {
+  if (is_disabled(rule)) return
+  lvl = (mode == "warn" ? "WARN" : "FAIL")
+  emit(lvl, rule, file, line_no, msg, snippet)
+}
+
+function is_comment(line) {
+  return (line ~ /^[[:space:]]*[#\/]/) || (line ~ /^[[:space:]]*\*/) || (line ~ /^[[:space:]]*--/)
+}
+
+BEGIN {
+  fail_count = 0
+  warn_count = 0
+  file = ""
+  in_hunk = 0
+  current_new_line = 0
+  total_lines = 0
+}
+
+{
+  total_lines = NR
+  diff_lines[NR] = $0
+
+  if ($0 ~ /^diff --git /) {
+    file = $3
+    sub(/^b\//, "", file)
+    sub(/^a\//, "", file)
+    in_hunk = 0
+    # Skip the policy files themselves: the rules, their docs, and this script
+    # source naturally contain the words we lint for (e.g. literal "flag=true"
+    # as an example, or the regex pattern /fixed|works|done|.../ itself).
+    # Extending the skip-list: HAPPY_PATH_POLICY_SKIP (comma-sep glob substrings).
+    skip_pat = "^(governance/|docs/governance/|docs/ai-dd-pitfalls|/ai-dd-pitfalls|/feedback_aidd_hardening|/CLAUDE\\.md)"
+    extra = ENVIRON["HAPPY_PATH_POLICY_SKIP"]
+    if (extra != "") {
+      n = split(extra, arr, ",")
+      for (i = 1; i <= n; i++) {
+        t = trim(arr[i])
+        if (t != "") skip_pat = skip_pat "|^(" t ")"
+      }
+    }
+    if (file ~ skip_pat) {
+      file = ""
+      in_hunk = 0
+      next
+    }
+    next
+  }
+
+  if ($0 ~ /^@@ /) {
+    if (match($0, /\+[0-9]+/)) {
+      current_new_line = int(substr($0, RSTART + 1, RLENGTH - 1))
+    }
+    in_hunk = 1
+    next
+  }
+
+  if (!in_hunk || $0 ~ /^\+\+\+/ || file == "") next
+
+  tag = substr($0, 1, 1)
+  body = substr($0, 2)
+  lc = tolower(body)
+  if (tag == "+") {
+    current_new_line++
+    line_no = current_new_line
+    is_template = (file ~ /COMMIT_EDITMSG|MERGE_MSG|PULL_REQUEST_TEMPLATE|pull_request_template\.md/)
+
+    # R1 fixed-claim-without-user-conf
+    if (!is_template && lc ~ /(fixed|works|done|passing|verified|✅|✔|✔️)/) {
+      if (!window_has(NR, /user-confirmed|user-saw|confirmed by user|eyes-on|last-link:/)) {
+        report("r1", file, line_no, body, "user-eye confirmation missing")
+      }
+    }
+
+    # R2 telemetry-only-success
+    if (lc ~ /(flag=true|enabled=true|build ok|200 ok|submitcount|executed|compiled|patch applied)/) {
+      if (!window_has(NR, /pixel|screenshot by user|user said|frameMs|measured|observed|last-link:/)) {
+        report("r2", file, line_no, body, "telemetry-only success")
+      }
+    }
+
+    # R3 blunt-force-constant
+    if (lc ~ /= [0-9]{4,}/ ||
+        lc ~ / *= *1[0-9]\./ ||
+        lc ~ /scale *= *[0-9]{2,}/ ||
+        lc ~ /multiplier *= *[0-9]{2,}/ ||
+        lc ~ /voxelScale *= *[0-9.]+/ ||
+        lc ~ /timeout *= *[0-9]{5,}/ ||
+        lc ~ /bufferSize *= *[0-9]{6,}/) {
+      if (!has_allow(body) && !window_has(NR, /todo|fixme|hack|root-cause|investigate/)) {
+        report("r3", file, line_no, body, "blunt-force constant assignment")
+      }
+    }
+
+    # R4 iteration-grind
+    if (lc ~ /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*[0-9]+/) {
+      if (match(lc, /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*([0-9]+)/, m)) {
+        if ((m[2] + 0) > 20 && !window_has(NR, /confirmedwins|userconfirmed|user-confirmed|confirmed by user|eyes-on|user-saw/)) {
+          report("r4", file, line_no, body, "iteration/grind without confirmed wins")
+        }
+      }
+    }
+
+    # R5 build-without-size-perf
+    if (lc ~ /(compiled|build ok|npm test|cargo build|dotnet build|go test|mvn test)/ && is_comment(body)) {
+      if (!window_has(NR, /size=|frameMs|mb|ms|seconds|latency|memory|kb|throughput/)) {
+        report("r5", file, line_no, body, "build/test claim without size/perf/robustness token")
+      }
+    }
+
+    # R6 stale-code-risk
+    if (lc ~ /\b(rebuilt|compiled|tested)\b/ && !is_comment(body)) {
+      if (!window_has(NR, /version=|kill-stale|clear-cache|sha|hash|banner|last-link:/)) {
+        report("r6", file, line_no, body, "stale rebuild/test claim without reset/version/badge token")
+      }
+    }
+
+    # R7 motion-without-result
+    if (lc ~ /(enabled[[:space:]]*=[[:space:]]*false|featureflag[[:space:]]*=[[:space:]]*false|flag[[:space:]]*=[[:space:]]*false|experimental[[:space:]]*=[[:space:]]*false|verbose[[:space:]]*=[[:space:]]*false|# todo|no-op|stub|proposed only)/) {
+      report("r7", file, line_no, body, "feature false/placeholder introduced without result signal")
+    }
+
+  } else if (tag == " " || tag == "-") {
+    current_new_line++
+  }
+}
+
+END {
+  if (mode == "warn") {
+    print "Summary: " warn_count " warning(s), " fail_count " muted-by-mode."
+    exit 0
+  }
+  if (fail_count > 0) {
+    print "Summary: " fail_count " failing check(s)."
+    exit 1
+  }
+  print "Summary: no failures."
+  exit 0
+}
+' "$tmp_diff"
+
+status=$?
+rm -f "$tmp_diff"
+exit "$status"
+
