@@ -6,6 +6,9 @@ set -eu
 HAPPY_PATH_FAIL_ON="${HAPPY_PATH_FAIL_ON:-block}"
 HAPPY_PATH_DISABLE="${HAPPY_PATH_DISABLE:-}"
 HAPPY_PATH_BIG_CONSTANT_ALLOW="${HAPPY_PATH_BIG_CONSTANT_ALLOW:-}"
+# Regex (POSIX ERE) exempting well-known, root-cause-derived constants from R3.
+# Default: voxelScaleMultiplier (canonical WSM3D fix). Override per-repo via env.
+HAPPY_PATH_BIG_CONSTANT_ALLOW_REGEX="${HAPPY_PATH_BIG_CONSTANT_ALLOW_REGEX:-(?i)voxelscalemultiplier}"
 
 mode=$(printf '%s' "$HAPPY_PATH_FAIL_ON" | tr 'A-Z' 'a-z')
 if [ "$mode" = "off" ]; then
@@ -22,6 +25,7 @@ fi
 
 awk -v disable="$HAPPY_PATH_DISABLE" \
     -v allow="$HAPPY_PATH_BIG_CONSTANT_ALLOW" \
+    -v big_allow_re="$HAPPY_PATH_BIG_CONSTANT_ALLOW_REGEX" \
     -v mode="$mode" '
 function trim(s) { sub(/^[[:space:]]+/, "", s); sub(/[[:space:]]+$/, "", s); return s }
 
@@ -56,6 +60,24 @@ function has_allow(line,    i, token, list, arr, n) {
     if (index(line, token) > 0) return 1
   }
   return 0
+}
+
+# R3 allowlist via regex. The default regex (configurable via
+# HAPPY_PATH_BIG_CONSTANT_ALLOW_REGEX) covers well-known root-cause constants
+# such as the canonical WSM3D VoxelScaleMultiplier=8.0 fix. Override per-repo.
+# Note: gawk's `(?i)` inline flag is silently dropped when a regex is passed
+# via a string variable, so we strip the prefix and lower-case both the
+# regex and the input line. Callers already pass `lc` (lowercased body).
+# This keeps the default `(?i)voxelscalemultiplier` and any case-insensitive
+# user override effective on both gawk and POSIX awk.
+function matches_allow_regex(line,    re) {
+  re = big_allow_re
+  if (re == "") return 0
+  # Strip any leading inline flags (e.g. "(?i)") so they don't end up in
+  # the matched text. Inline flags accepted: (?i) for case-insensitive.
+  sub(/^\(\?[imx]+\)/, "", re)
+  re = tolower(re)
+  return (line ~ re) ? 1 : 0
 }
 
 function window_has(idx, pattern,    i, s) {
@@ -165,7 +187,7 @@ BEGIN {
         lc ~ /voxelScale *= *[0-9.]+/ ||
         lc ~ /timeout *= *[0-9]{5,}/ ||
         lc ~ /bufferSize *= *[0-9]{6,}/) {
-      if (!has_allow(body) && !window_has(NR, /todo|fixme|hack|root-cause|investigate/)) {
+      if (!matches_allow_regex(lc) && !has_allow(body) && !window_has(NR, /todo|fixme|hack|root-cause|investigate/)) {
         report("r3", file, line_no, body, "blunt-force constant assignment")
       }
     }

@@ -13,8 +13,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install bash
-        run: sudo apt-get install -y bash
+      - name: Test R3 allowlist
+        run: |
+          bash governance/test-happy-path-allowlist.sh
       - name: Run guard against HEAD diff
         run: |
           bash governance/happy-path-precommit.sh
