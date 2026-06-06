@@ -34,6 +34,27 @@ Draft → Auto-Validation → Review → Approval → Publish
 - [Merge Scenarios](/governance/stacked-prs/04-merge-scenarios)
 - [Release Matrix Template](/templates/release-matrix-template)
 
+### Happy-Path Collapse Governance
+
+The happy-path-collapse guard prevents the "looks fine" failure mode where every
+upstream signal says success (build green, flag=true, patch applied) while the
+real outcome is wrong, stale, or silently degraded. It encodes the seven rules
+in `feedback_aidd_hardening.md` plus the two pitfalls (`testing the wrong
+thing`, `motion-without-result`) from `ai-dd-pitfalls.md`.
+
+- [Happy-Path Collapse Checklist](/governance/happy-path-checklist) — the 7 rules + 2 pitfalls, with concrete FAIL patterns, PASS evidence, and SOTA references (CNCF SLSA, OpenSSF, Google SRE, Microsoft SDL).
+- Guard script: `governance/happy-path-precommit.sh` (POSIX sh, runs on staged diff, exits non-zero on collapse patterns).
+- Pre-commit hook: registered in `.pre-commit-config.yaml` as `happy-path-collapse-guard` on the `commit` stage.
+- CI mirror: `.github/workflows/happy-path-precommit.yml` runs the same checks on every push and PR.
+- Knobs: `HAPPY_PATH_FAIL_ON=block|warn|off`, `HAPPY_PATH_DISABLE=rule1,rule2,...`, `HAPPY_PATH_BIG_CONSTANT_ALLOW=...`.
+
+Run locally with:
+
+```sh
+git add -A
+bash governance/happy-path-precommit.sh
+```
+
 ## Roles
 
 ### Documentation Lead
