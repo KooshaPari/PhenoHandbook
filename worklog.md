@@ -41,3 +41,33 @@ instead of only prose guidelines.
 ### Tags
 
 `[PhenoHandbook]` `[cross-repo]` `[GOVERNANCE]`
+
+## 2026-06-08 — Journey catalog & happy-path governance merged
+
+Category: GOVERNANCE
+
+### Context
+
+The journey-traceability adoption catalog (`docs/journeys/journey-traceability-catalog.md`)
+and the happy-path collapse governance checklist + pre-commit guard landed on
+`main` (PRs #82, #81). These close the loop on the 2026-04-30 traceability
+decision: the handbook now both describes the standard and ships the
+guardrails that keep new patterns honest about journey evidence.
+
+### Finding / Decision
+
+Carry forward the standard worklog discipline — each subsequent handbook
+expansion (new pattern domain, new methodology, new anti-pattern) should
+record its adoption decision in this file with a date, category, and
+tags. Cheap-win branches (date bumps, worklog backfill) are an acceptable
+form of hygiene as long as the diff stays scoped and reviewable.
+
+### Impact
+
+Worklog is no longer stale relative to `main`. Future contributors can read
+the chain of governance decisions (2026-04-30 standard → 2026-06-08 catalog
++ guardrails) without piecing it together from `git log`.
+
+### Tags
+
+`[PhenoHandbook]` `[worklog-hygiene]` `[GOVERNANCE]`
