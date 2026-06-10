@@ -7,6 +7,7 @@ The conventions the org actually builds by. PhenoHandbook is the **CONVENTIONS**
 | Category | Pattern | Summary |
 |----------|---------|---------|
 | Spine | [spine-roles](spine-roles.md) | The 4-role split (index / ADRs / conventions / enforcement) and the authority rule. |
+| Workspace | [workspace-organization](workspace-organization.md) | Pheno* repos are siblings under `repos/`, not nested; each owns its own git; worktrees live in sibling `<repo>-wtrees/` dirs. |
 | Architecture | [architecture/hexagonal](architecture/hexagonal.md) | Ports & adapters. |
 | Async | [async/event-driven](async/event-driven.md) | Event-driven messaging. |
 | Methodology | [methodology/xdd](methodology/xdd.md) | xDD-first (TDD/BDD/SDD/CDD/DDD/PDD), hexagonal, SOLID/DRY, libify at 2nd use. |
