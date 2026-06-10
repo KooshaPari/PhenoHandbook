@@ -15,6 +15,7 @@ The conventions the org actually builds by. PhenoHandbook is the **CONVENTIONS**
 | Delegation | [delegation/codex-first](delegation/codex-first.md) | codex-spark first; disjoint files; per-worker worktrees; never stash. |
 | CI | [ci/never-billable-ci](ci/never-billable-ci.md) | Avoid billable minutes; pin runners/actions; least-privilege; sponsor-merge. |
 | Stack | [stack/defaults](stack/defaults.md) | TanStack / FastMCP / VitePress / xUnit; Rust/Go for tooling; .env always. |
+| Build info | [build-info](build-info.md) | `phenotype_build_info::build_info` / `pkg_version` / `is_release_build` for every binary's version, git SHA, profile, and target triple; no inline `env!` blocks. |
 | Traceability | [traceability/requirements](traceability/requirements.md) | FR/NFR in Tracera + AgilePlus Epic/Story; requirement→code→test→PR. |
 
 These are descriptive of current practice, not aspirational. If a pattern here no longer matches reality, fix the pattern or the practice — don't let them drift.
