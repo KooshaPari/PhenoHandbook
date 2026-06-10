@@ -9,6 +9,7 @@ The conventions the org actually builds by. PhenoHandbook is the **CONVENTIONS**
 | Spine | [spine-roles](spine-roles.md) | The 4-role split (index / ADRs / conventions / enforcement) and the authority rule. |
 | Architecture | [architecture/hexagonal](architecture/hexagonal.md) | Ports & adapters. |
 | Async | [async/event-driven](async/event-driven.md) | Event-driven messaging. |
+| Logging | [logging-rust](logging-rust.md) | `tracing` macros with typed fields, installed once via `phenotype_logging::init_tracing`. No `println!` / `eprintln!` / inline `tracing_subscriber::fmt().init()` / third-party loggers (`log`, `env_logger`, `slog`). |
 | Methodology | [methodology/xdd](methodology/xdd.md) | xDD-first (TDD/BDD/SDD/CDD/DDD/PDD), hexagonal, SOLID/DRY, libify at 2nd use. |
 | Methodology | [methodology/wrap-over-handroll](methodology/wrap-over-handroll.md) | Wrap existing ecosystem behind ports; reduce LOC. |
 | Tooling | [tooling/task-runner](tooling/task-runner.md) | Justfile primary, Taskfile mirror, Tools/*.ps1 for >20-line scripts. |
