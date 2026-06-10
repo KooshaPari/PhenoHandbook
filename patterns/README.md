@@ -11,6 +11,7 @@ The conventions the org actually builds by. PhenoHandbook is the **CONVENTIONS**
 | Async | [async/event-driven](async/event-driven.md) | Event-driven messaging. |
 | Methodology | [methodology/xdd](methodology/xdd.md) | xDD-first (TDD/BDD/SDD/CDD/DDD/PDD), hexagonal, SOLID/DRY, libify at 2nd use. |
 | Methodology | [methodology/wrap-over-handroll](methodology/wrap-over-handroll.md) | Wrap existing ecosystem behind ports; reduce LOC. |
+| Methodology | [service-integration](service-integration.md) | Consumer-side wiring for a new service binary: `init_tracing` + `build_default_client` + `Secret` + `TokenBucket`, in that order, no ecosystem-crate substitutions. The complement to `module-decoupling.md` (the producer-side lift to `phenoShared`). |
 | Tooling | [tooling/task-runner](tooling/task-runner.md) | Justfile primary, Taskfile mirror, Tools/*.ps1 for >20-line scripts. |
 | Delegation | [delegation/codex-first](delegation/codex-first.md) | codex-spark first; disjoint files; per-worker worktrees; never stash. |
 | CI | [ci/never-billable-ci](ci/never-billable-ci.md) | Avoid billable minutes; pin runners/actions; least-privilege; sponsor-merge. |
