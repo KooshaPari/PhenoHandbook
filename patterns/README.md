@@ -11,6 +11,7 @@ The conventions the org actually builds by. PhenoHandbook is the **CONVENTIONS**
 | Async | [async/event-driven](async/event-driven.md) | Event-driven messaging. |
 | Methodology | [methodology/xdd](methodology/xdd.md) | xDD-first (TDD/BDD/SDD/CDD/DDD/PDD), hexagonal, SOLID/DRY, libify at 2nd use. |
 | Methodology | [methodology/wrap-over-handroll](methodology/wrap-over-handroll.md) | Wrap existing ecosystem behind ports; reduce LOC. |
+| Methodology | [feature-flagging](feature-flagging.md) | Subagent "false premise" verdict → greenfield pivot: add a new `Option<T>` field with the desired wrapper on day 1, do not refactor the existing field. |
 | Tooling | [tooling/task-runner](tooling/task-runner.md) | Justfile primary, Taskfile mirror, Tools/*.ps1 for >20-line scripts. |
 | Delegation | [delegation/codex-first](delegation/codex-first.md) | codex-spark first; disjoint files; per-worker worktrees; never stash. |
 | CI | [ci/never-billable-ci](ci/never-billable-ci.md) | Avoid billable minutes; pin runners/actions; least-privilege; sponsor-merge. |
