@@ -39,7 +39,7 @@ jobs:
         uses: actions/attest-build-provenance@35a8f9717e7a2adb1c2c3b2ac88961ba9c230e98 # v1.3.0
         with:
           subject-name: ${{ github.repository }}
-          subject-digest: sha256:$(sha256sum dist/artifact.tar.gz | awk '{print $1}')
+          subject-path: dist/artifact.tar.gz
           push-to-registry: false
 
       - name: Upload artifact
