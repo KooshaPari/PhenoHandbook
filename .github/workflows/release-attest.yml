@@ -1,0 +1,49 @@
+name: Release + SLSA Build Attestation
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., v1.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build + Attest
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.0
+
+      - name: Build artifact
+        run: |
+          npm install --no-audit --no-fund
+          npm run docs:build
+          mkdir -p dist
+          tar -czf dist/artifact.tar.gz -C docs/.vitepress/dist .
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@35a8f9717e7a2adb1c2c3b2ac88961ba9c230e98 # v1.3.0
+        with:
+          subject-name: ${{ github.repository }}
+          subject-digest: sha256:$(sha256sum dist/artifact.tar.gz | awk '{print $1}')
+          push-to-registry: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd0de8ccd5686b70862 # v4.6.0
+        with:
+          name: ${{ github.event.inputs.version || github.ref_name }}-artifact
+          path: dist/artifact.tar.gz
