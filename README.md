@@ -165,6 +165,20 @@ git push origin main  # Auto-deploy via CI
 
 ---
 
+## Security
+
+The handbook is a public, read-only documentation site, but its build pipeline
+and CI workflows still have an attack surface worth modeling.
+
+- **Threat model:** [docs/security/threat-model.md](docs/security/threat-model.md)
+  (STRIDE per-component; covers the VitePress renderer, 9 CI workflows, and
+  the vitepress + vitest build pipeline).
+- **Reporting a vulnerability:** see [SECURITY.md](SECURITY.md).
+- **Secret scanning:** [trufflehog.yml](.github/workflows/trufflehog.yml) and
+  the pre-commit hook in [`.pre-commit-config.yaml`](.pre-commit-config.yaml).
+
+---
+
 ## Contributing
 
 1. **New pattern**: Create PR with pattern in appropriate domain folder
