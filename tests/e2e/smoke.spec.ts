@@ -6,7 +6,7 @@ test('homepage renders and has expected title', async ({ page }) => {
 });
 
 test('patterns page loads and shows sidebar', async ({ page }) => {
-  await page.goto('/patterns/');
+  await page.goto('patterns/architecture/hexagonal');
   await expect(page.locator('aside').first()).toBeVisible();
 });
 
