@@ -17,5 +17,6 @@ The conventions the org actually builds by. PhenoHandbook is the **CONVENTIONS**
 | CI | [ci/never-billable-ci](ci/never-billable-ci.md) | Avoid billable minutes; pin runners/actions; least-privilege; sponsor-merge. |
 | Stack | [stack/defaults](stack/defaults.md) | TanStack / FastMCP / VitePress / xUnit; Rust/Go for tooling; .env always. |
 | Traceability | [traceability/requirements](traceability/requirements.md) | FR/NFR in Tracera + AgilePlus Epic/Story; requirement→code→test→PR. |
+| Governance | [governance/mcp-fork-selection](governance/mcp-fork-selection.md) | MCP polyrepo decision tree: framework vs spec vs runtime; fork parent table (ADR-017/018). |
 
 These are descriptive of current practice, not aspirational. If a pattern here no longer matches reality, fix the pattern or the practice — don't let them drift.
