@@ -95,8 +95,13 @@ nav:
           - patterns/testing/index.md
           - BDD: patterns/testing/bdd.md
           - Property-Based: patterns/testing/property-based.md
+      - Governance:
+          - MCP Fork Selection: patterns/governance/mcp-fork-selection.md
   - Anti-Patterns:
-      - anti-patterns/index.md
+      - anti-patterns/README.md
+      - MCP:
+          - Language-bucket SDK: anti-patterns/language-bucket-sdk.md
+          - Mirror to empty repo: anti-patterns/mirror-to-empty-repo.md
       - Security:
           - anti-patterns/security/plaintext-tokens.md
           - anti-patterns/security/hardcoded-secrets.md
