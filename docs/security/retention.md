@@ -15,9 +15,9 @@ PR2 (Data retention) = the repo has a documented policy for how long each catego
 ```markdown
 # Data Retention Policy
 
-> **Last reviewed:** 2026-06-17
+> **Last reviewed:** YYYY-MM-DD
 > **Owner:** @<handle>
-> **Review cadence:** Annual (next review 2027-06-17)
+> **Review cadence:** Annual (next review YYYY-MM-DD)
 
 ## Scope
 
