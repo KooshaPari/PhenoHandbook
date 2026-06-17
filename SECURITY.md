@@ -1,5 +1,12 @@
 # Security Policy
 
+## Threat Model
+
+A STRIDE-per-component threat model for the VitePress site, CI workflows, and
+build pipeline lives at [`docs/security/threat-model.md`](docs/security/threat-model.md).
+It is reviewed quarterly and on any new external dependency; the **Last reviewed**
+column on every component row records the date.
+
 ## Reporting a Vulnerability
 
 We take security seriously. **Please do not file public issues for security vulnerabilities.**
