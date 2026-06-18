@@ -97,6 +97,7 @@ nav:
           - Property-Based: patterns/testing/property-based.md
       - Governance:
           - MCP Fork Selection: patterns/governance/mcp-fork-selection.md
+          - Retired MCP repos: patterns/governance/retired-mcp-repos.md
   - Anti-Patterns:
       - anti-patterns/README.md
       - MCP:
