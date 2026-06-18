@@ -236,3 +236,8 @@ tasks:
       - rm -rf node_modules docs/.vitepress/dist docs/.vitepress/cache \
         docs/.vitepress/.temp coverage .turbo .task .pytest_cache .ruff_cache \
         dist build target *.tsbuildinfo
+
+  coverage:
+    desc: Measure code coverage (SSOT: see grade.sh for the canonical command).
+    cmds:
+      - npx jest --coverage --coverageThreshold='{"global":{"branches":85,"functions":85,"lines":85,"statements":85}}'
