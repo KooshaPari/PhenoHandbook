@@ -10,6 +10,7 @@ Phenotype governance and handbook content.
 - Collection rules: non-empty, min/max length, all/any predicates, uniqueness
 - Composition: `and`, `or`, `not`
 - Custom rules with reusable error reporting
+- Reference implementation: [docs/reference/validation-rules.py](../reference/validation-rules.py)
 
 ## Why it lives here
 
