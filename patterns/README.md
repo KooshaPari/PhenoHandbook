@@ -15,7 +15,11 @@ The conventions the org actually builds by. PhenoHandbook is the **CONVENTIONS**
 | Tooling | [tooling/task-runner](tooling/task-runner.md) | Justfile primary, Taskfile mirror, Tools/*.ps1 for >20-line scripts. |
 | Delegation | [delegation/codex-first](delegation/codex-first.md) | codex-spark first; disjoint files; per-worker worktrees; never stash. |
 | CI | [ci/never-billable-ci](ci/never-billable-ci.md) | Avoid billable minutes; pin runners/actions; least-privilege; sponsor-merge. |
+<<<<<<< Updated upstream
 | Security | [secrets](secrets.md) | `phenotype_secret::Secret<T>` for every credential; never `String` / `&str` for API keys, tokens, or signing keys. |
+=======
+| Logging | [logging-go](logging-go.md) | `log/slog` with `slog.NewJSONHandler` + `sync.Once` guard, not stdlib `log` / `fmt.Fprintln(os.Stderr, ...)` / third-party loggers (`zap`, `zerolog`, `logrus`). |
+>>>>>>> Stashed changes
 | Stack | [stack/defaults](stack/defaults.md) | TanStack / FastMCP / VitePress / xUnit; Rust/Go for tooling; .env always. |
 | Time | [time](time.md) | `phenotype_time::{now_unix_ms, now_unix_secs, format_iso8601, parse_iso8601}` for every clock read and timestamp format/parse; no inline `SystemTime::now().duration_since(UNIX_EPOCH)` or `chrono::Utc::now().to_rfc3339()`. |
 | Traceability | [traceability/requirements](traceability/requirements.md) | FR/NFR in Tracera + AgilePlus Epic/Story; requirement→code→test→PR. |
