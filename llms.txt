@@ -1,0 +1,59 @@
+# PhenoHandbook
+
+> Living documentation for design patterns, anti-patterns, guidelines, methodologies,
+> and checklists across the Phenotype ecosystem. Doc-only MkDocs/VitePress site; no
+> runtime code. Referenced from ~80% of fleet ADRs.
+
+## Documentation
+
+- [README.md](README.md): overview, quick start, registry structure, pattern format.
+- [AGENTS.md](AGENTS.md): project identity, conventions, what/when/when-not for AI agents.
+- [CHARTER.md](CHARTER.md): mission, tenets, in/out of scope, target users, success criteria.
+- [SPEC.md](SPEC.md): canonical specification (v1.0.0, 2026-04-04) — content model, pattern format, governance.
+- [ADR.md](ADR.md): top-level ADR index + cross-pattern decision log.
+- [CHANGELOG.md](CHANGELOG.md): release notes (Keep a Changelog 1.1.0, SemVer 2.0.0).
+- [PLAN.md](PLAN.md): roadmap / publishing pipeline.
+- [PRD.md](PRD.md): product requirements (long-form context for new contributors).
+- [INDEX.md](INDEX.md): governance index (happy-path checklist + pre-commit guard).
+- [VERSION](VERSION): current version (0.1.0).
+
+## Patterns
+
+- [patterns/README.md](patterns/README.md): domain index (auth, caching, async, CI, observability, …).
+- [patterns/spine-roles.md](patterns/spine-roles.md): 4-role model for cross-repo spine work.
+- [patterns/feature-flagging.md](patterns/feature-flagging.md): feature flag patterns.
+- [patterns/architecture/](patterns/architecture/): hexagonal, microservices, event-driven architecture patterns.
+- [patterns/async/](patterns/async/): async, message-passing, queue patterns.
+- [patterns/ci/](patterns/ci/): CI/CD, quality-gate, SBOM, SLSA patterns.
+- [patterns/delegation/](patterns/delegation/): subagent dispatch, forge/codex patterns.
+- [patterns/governance/](patterns/governance/): governance meta-patterns (ADR, decision log, FR traceability).
+- [patterns/methodology/](patterns/methodology/): TDD, BDD, DDD, xDD.
+- [patterns/stack/](patterns/stack/): language/stack-specific conventions.
+- [patterns/tooling/](patterns/tooling/): Justfile, Taskfile, pre-commit patterns.
+- [patterns/traceability/](patterns/traceability/): journey evidence, FR traceability.
+
+## Anti-patterns
+
+- [anti-patterns/README.md](anti-patterns/README.md): retired patterns registry.
+- [anti-patterns/language-bucket-sdk.md](anti-patterns/language-bucket-sdk.md): why `phenotype-{lang}-sdk` umbrella repos fail (ADR-017).
+- [anti-patterns/mirror-to-empty-repo.md](anti-patterns/mirror-to-empty-repo.md): bulk-mirror anti-pattern.
+
+## ADRs
+
+- [adrs/](adrs/): MADR-format Architecture Decision Records (001-hexagonal, 002-NATS, 003-storage, 004-api, 005-auth, 006-deploy, 007-monitoring, 008-security, …).
+
+## Optional
+
+- [LICENSE-MIT](LICENSE-MIT): MIT license text.
+- [LICENSE-APACHE](LICENSE-APACHE): Apache 2.0 license text.
+- [LICENSE](LICENSE): primary license pointer.
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute a pattern or anti-pattern.
+- [SECURITY.md](SECURITY.md): vulnerability reporting policy.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): community standards.
+- [FUNCTIONAL_REQUIREMENTS.md](FUNCTIONAL_REQUIREMENTS.md): feature tracking.
+- [SOTA.md](SOTA.md): state-of-the-art survey (long-form, ~119k chars).
+- [worklog.md](worklog.md): running worklog (per-repo local).
+- [catalog-info.yaml](catalog-info.yaml): Backstage-style catalog metadata.
+- [mkdocs.yml](mkdocs.yml): MkDocs site build config.
+- [package.json](package.json): VitePress / tooling package manifest.
+- [Taskfile.yml](Taskfile.yml): task runner config (lint, build, test, deploy).

@@ -1,25 +1,66 @@
 # AGENTS.md — PhenoHandbook
 
-Phenotype repository
+**Date:** 2026-06-19
+**Status:** ACTIVE (lightly used spine; read-only reference per fleet `AGENTS.md` Decision D)
+**Bucket:** spine (not a pheno-*-lib / phenotype-*-sdk / federated service per ADR-023)
 
-## Quick Links
+## What
 
-- **Local CLAUDE.md:** See `CLAUDE.md` in this repository for project-specific guidance
-- **Phenotype org governance:** `/Users/kooshapari/CodeProjects/Phenotype/repos/CLAUDE.md`
-- **Global agent guidance:** `~/.claude/AGENTS.md`
-- **AgilePlus work tracking:** `cd /repos/AgilePlus && agileplus <command>`
+Living documentation for design patterns, anti-patterns, guidelines, methodologies, and
+checklists across the Phenotype ecosystem. Doc-only MkDocs/VitePress site; no runtime
+code. Patterns link to specs in `PhenoSpecs` and inform template generation in `HexaKit`.
+Referenced from ~80% of fleet ADRs (per `CHARTER.md` success criteria).
 
-## Key Workflows
+## When to use
 
-1. **Before implementing:** Check AgilePlus for existing specs
-2. **Quality gates:** Run linters, tests, and docs validation (see CLAUDE.md)
-3. **Worktrees:** Use `repos/PhenoHandbook-wtrees/<topic>/` for feature work
-4. **Integration:** Commit to canonical repo (`main`) after quality gates pass
+- **Looking for an established pattern** before writing new code (auth, caching, async,
+  CI, observability, etc.) → `ls patterns/<domain>/`.
+- **Checking what NOT to do** → `ls anti-patterns/`.
+- **Onboarding a new contributor** to the "Phenotype way" → start with `README.md` then
+  `CHARTER.md`.
+- **Drafting a new ADR** → copy the template from `adrs/00-template.md` (MADR format).
+- **Reviewing whether a pattern is still valid** → read the rationale + trade-off
+  section; patterns include "when to break the rule" notes.
 
-## Project-Specific Gotchas
+## When NOT to use
 
-See CLAUDE.md for language stack, build commands, and testing requirements.
+- **Don't open PRs against `PhenoHandbook` for app-level work.** App-level repos (PAUSED
+  per ADR-023) do not write here. Substrate (pheno-*-lib / phenotype-*-sdk) writes here
+  only when canonicalizing a new pattern, never as scratch space.
+- **Don't duplicate content already in `PhenoSpecs` or `phenotype-registry`.** PhenoSpecs
+  = canonical specs; `phenotype-registry` = boundary index. PhenoHandbook is patterns +
+  anti-patterns, not specs.
+- **Don't treat a pattern as dogma.** Per `CHARTER.md` Tenet 2: context matters. Patterns
+  include rationale + trade-offs + "when to break the rule". Re-litigate in an ADR if
+  the context has shifted.
+- **Don't add ad-hoc tooling instructions** (`how to run X`, `setup Y`). Those belong in
+  the consuming repo's `CLAUDE.md` or `Taskfile.yml`.
 
----
+## Layout
 
-**Parent contract:** Extends Phenotype-org governance. See `CLAUDE.md` and parent `AGENTS.md` for complete operating procedures.
+| Path | Purpose |
+|------|---------|
+| `patterns/<domain>/*.md` | Design patterns by domain (auth, caching, async, observability, …) |
+| `anti-patterns/*.md` | What NOT to do; retired patterns with rationale |
+| `adrs/*.md` | Architecture Decision Records (MADR format) |
+| `docs/` | Long-form docs, intent pages, journey-evidence contracts |
+| `governance/` | Happy-path checklist, pre-commit guards |
+| `mkdocs.yml` + `package.json` | MkDocs / VitePress site build |
+
+## Conventions
+
+- **Commits:** Conventional Commits (`docs:` is the dominant type for pattern edits).
+- **Branches:** `docs/<pattern-slug>` for new patterns; `chore/<req-id>-<slug>-<date>` for
+  governance / meta-bundle work (this branch is `chore/handbook-meta-2026-06-19`).
+- **PRs:** Open against `KooshaPari/PhenoHandbook:main`. No self-merge on substantive
+  content; meta-bundle chores may self-merge per fleet norm.
+- **License:** Triple-licensed MIT / Apache-2.0 (see `LICENSE-MIT`, `LICENSE-APACHE`).
+- **Substrate placement:** `spine` (not a buildable artifact). No `[workspace]` member,
+  no `Cargo.toml` / `pyproject.toml` / `go.mod` of its own.
+
+## Authority
+
+- Fleet spine governance: `/repos/AGENTS.md` (parent) + `findings/` + `docs/adr/`.
+- Sibling spines: `phenodocs` (org docs hub), `PhenoSpecs` (canonical specs),
+  `phenotype-registry` (boundary index), `phenotype-infra` (infra-as-code).
+- Source of truth for new patterns: an ADR in `adrs/` first, then the pattern file.
