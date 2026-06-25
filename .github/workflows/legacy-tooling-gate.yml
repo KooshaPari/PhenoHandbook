@@ -26,13 +26,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
-      - name: Checkout phenotype/repos for shared tools
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-        with:
-          repository: kooshapari/phenotype
-          path: phenotype-repos
-          sparse-checkout: tooling/legacy-enforcement
-
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -41,15 +34,13 @@ jobs:
       - name: Install dependencies
         run: pip install pyyaml
 
-      - name: Run Legacy Tooling Scanner (WARN Mode)
+      - name: Run Legacy Tooling Scanner
         run: |
-          python3 phenotype-repos/tooling/legacy-enforcement/scanner/legacy_tooling_scanner.py \
+          python3 tooling/legacy-enforcement/scanner/legacy_tooling_scanner.py \
             --repo-root . \
-            --policy phenotype-repos/tooling/legacy-enforcement/policy/rules.yaml \
+            --policy tooling/legacy-enforcement/policy/rules.yaml \
             --output-json legacy_tooling_report.json \
-            --output-md legacy_tooling_report.md \
-            --report-only
-        continue-on-error: true
+            --output-md legacy_tooling_report.md
 
       - name: Upload scan report (JSON)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -96,7 +87,7 @@ jobs:
                 report += 'No violations detected.\n';
               }
               
-              report += '\n*This is a WARN-mode scan. Fix before strict enforcement begins.*';
+              report += '\n*Legacy tooling scan enforces critical/high violations in CI.*';
             } catch (e) {
               report += 'Could not parse scan results.';
             }

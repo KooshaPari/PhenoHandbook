@@ -26,10 +26,9 @@ jobs:
         uses: actions/setup-node@1a4442cacd436585916f4bd0495db9b8a8a0d4d8
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install
-        run: npm ci
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: Install Playwright
         run: npx playwright install --with-deps chromium

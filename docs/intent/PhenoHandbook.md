@@ -1,11 +1,8 @@
-<!--
-propagated-from: KooshaPari/phenotype-registry @ chore/l7-001-curation-snapshot
-date: 2026-06-17
-source-commit: a1aa44660
-do-not-edit-locally: regenerate via scripts/propagate-intent-to-repos.py
-                     or update in the source-of-truth registry repo
--->
 ---
+# propagated-from: KooshaPari/phenotype-registry @ chore/l7-001-curation-snapshot
+# date: 2026-06-17, source-commit: a1aa44660
+# do-not-edit-locally: regenerate via scripts/propagate-intent-to-repos.py
+#                     or update in the source-of-truth registry repo
 repo: "PhenoHandbook"
 aliases: []
 role: unknown
@@ -21,7 +18,7 @@ device: macbook
 
 ## Intent Statement
 
-<To be filled in by hand from the most recent binding prompt. This repo is bound to 15 prompts, 0 plans, and 0 agent responses captured between 2025-08 and 2026-06-17.>
+_To be filled in by hand from the most recent binding prompt. This repo is bound to 15 prompts, 0 plans, and 0 agent responses captured between 2025-08 and 2026-06-17._
 
 ## Bound Prompts
 
@@ -59,11 +56,11 @@ See: [`docs/boundary/PhenoHandbook.md`](../boundary/PhenoHandbook.md)
 
 ## Ecosystem Role
 
-<See `ECOSYSTEM_MAP.md` for the canonical ecosystem role.>
+_See `ECOSYSTEM_MAP.md` for the canonical ecosystem role._
 
 ## Open Questions
 
-- <To be filled from the latest prompt on this repo.>
+- _To be filled from the latest prompt on this repo._
 
 ## Change Log
 
