@@ -39,6 +39,14 @@ npm-debug.log*
 coverage/
 *.lcov
 .nyc_output/
+test-results/
+playwright-report/
+legacy_tooling_report.json
+legacy_tooling_report.md
+
+# VitePress
+docs/.vitepress/cache/
+docs/.vitepress/dist/
 
 # Misc
 *.tmp
