@@ -6,10 +6,10 @@ concurrency:
 on: [push, pull_request]
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-node@1a4442cacd436585916f4bd0495db9b8a8a0d4d8 # v4
         with: { node-version: '20' }
       - run: npm install
       - run: npm test 2>/dev/null || npm run test:unit 2>/dev/null || echo "no tests"
