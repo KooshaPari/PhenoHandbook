@@ -11,6 +11,8 @@ test('patterns page loads and shows sidebar', async ({ page }) => {
 });
 
 test('hexagonal pattern page loads', async ({ page }) => {
-  await page.goto('/patterns/architecture/hexagonal');
-  await expect(page.locator('main h1').first()).toBeVisible();
+  await page.goto('patterns/architecture/hexagonal');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    'Hexagonal Architecture',
+  );
 });
