@@ -17,17 +17,17 @@ permissions:
 jobs:
   legacy-tooling-scan:
     name: Legacy Tooling Anti-Pattern Scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       security-events: write
       pull-requests: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
@@ -43,14 +43,14 @@ jobs:
             --output-md legacy_tooling_report.md
 
       - name: Upload scan report (JSON)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: legacy-tooling-report-json
           path: legacy_tooling_report.json
           retention-days: 30
 
       - name: Upload scan report (Markdown)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: legacy-tooling-report-md
           path: legacy_tooling_report.md
@@ -58,22 +58,22 @@ jobs:
 
       - name: Comment PR with findings
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs');
             let report = '**Legacy Tooling Scan Report**\n\n';
-            
+
             try {
               const data = JSON.parse(fs.readFileSync('legacy_tooling_report.json', 'utf8'));
               const totals = data.totals || {};
-              
+
               report += `| Severity | Count |\n|----------|-------|\n`;
               report += `| Critical | ${totals.critical || 0} |\n`;
               report += `| High | ${totals.high || 0} |\n`;
               report += `| Medium | ${totals.medium || 0} |\n`;
               report += `| Low | ${totals.low || 0} |\n\n`;
-              
+
               const findings = data.findings || [];
               if (findings.length > 0) {
                 report += '**Top Violations:**\n';
@@ -86,12 +86,12 @@ jobs:
               } else {
                 report += 'No violations detected.\n';
               }
-              
+
               report += '\n*Legacy tooling scan enforces critical/high violations in CI.*';
             } catch (e) {
               report += 'Could not parse scan results.';
             }
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
