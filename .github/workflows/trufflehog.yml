@@ -17,5 +17,5 @@ jobs:
           fetch-depth: 0
       - uses: trufflesecurity/trufflehog@8708801319700a16c56abb86628803ba766d5563 # main 2026-07-17
         with:
-          version: v3.95.9
+          version: 3.95.9
           extra_args: --only-verified
