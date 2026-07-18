@@ -13,15 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
-      - run: |
-          if [ ! -f tooling/doc-link-check ]; then
-            mkdir -p tooling
-            if [ -d phenotype-tooling ]; then
-              cd phenotype-tooling && cargo build --release --bin doc-link-check 2>&1 | tail -5
-              ln -sf ../phenotype-tooling/target/release/doc-link-check ../tooling/
-            else
-              echo "Note: doc-link-check not available; skipping" && exit 0
-            fi
-          fi
-          tooling/doc-link-check docs/ || true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - run: bun install --frozen-lockfile
+      - run: bun run test -- tests/requirements.test.ts
+      - run: bun run build

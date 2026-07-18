@@ -96,6 +96,7 @@ non-optional Bun/TypeScript/Vitest gates and propagate failures.
 | Requirement orphaning | One named executable check per FR | 8/8 mapped |
 | Browser false positives | Built-site preview on isolated port | 3/3 Playwright journeys pass |
 | Generated artifact drift | Deterministic VitePress build | 1/1 build passes |
+| Historical/generated dead links | Keep the 99-link backlog explicit; enforce configured critical routes and E2E instead of a false fail-open scanner | FR-PH-006 validator + 3/3 journeys |
 
 ## Traceability Matrix
 

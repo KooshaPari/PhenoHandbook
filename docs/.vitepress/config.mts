@@ -6,6 +6,8 @@ export default defineConfig({
     "Patterns, anti-patterns, guidelines, and best practices for the Phenotype ecosystem",
 
   base: "/handbook/",
+  // Historical/generated indexes contain known placeholder links. Critical routes are
+  // enforced by requirements.test.ts and Playwright while that backlog is retired.
   ignoreDeadLinks: true,
 
   head: [
