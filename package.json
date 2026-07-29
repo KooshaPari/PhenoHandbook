@@ -8,11 +8,16 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "test": "vitest run",
-    "build": "vitepress build docs"
+    "test:e2e": "playwright test",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "build": "vitepress build docs",
+    "check": "bun run lint && bun run test && bun run build && bun audit --audit-level=high"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "@types/node": "^26.0.1",
+    "typescript": "^5.9.3",
     "vitepress": "^1.0.0",
     "vitest": "^4.1.7"
   },
@@ -21,9 +26,7 @@
     "bun": ">=1.0"
   },
   "overrides": {
-    "vitepress": {
-      "vite": "6.4.2"
-    }
+    "vite": "6.4.3"
   },
   "license": "MIT OR Apache-2.0",
   "packageManager": "bun@1"
