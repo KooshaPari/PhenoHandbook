@@ -105,6 +105,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
       - name: cargo-deny check
+        # yamllint disable-line rule:line-length
         uses: EmbarkStudios/cargo-deny-action@3f4a782664881cf5725d0ffd23969fcce89fd868
         with:
           arguments: --all-features
@@ -178,8 +179,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - uses: >-
-          actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48
+      # yamllint disable-line rule:line-length
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48
         with:
           fail-on-severity: low
 
