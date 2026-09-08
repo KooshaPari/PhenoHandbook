@@ -232,10 +232,7 @@ def read_text(path: Path) -> str | None:
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
-        try:
-            text = data.decode("latin-1")
-        except Exception:
-            return None
+        text = data.decode("latin-1")
     # Normalize CRLF / CR line endings to LF so regex `$` and line
     # accounting work the same on Windows-checked-out files.
     return text.replace("\r\n", "\n").replace("\r", "\n")

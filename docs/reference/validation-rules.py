@@ -16,7 +16,7 @@ T = TypeVar("T")
 
 
 class Rule(Protocol):
-    def __call__(self, value: Any) -> "ValidationResult": ...
+    def __call__(self, value: Any) -> ValidationResult: ...
 
 
 @dataclass(slots=True)
@@ -32,7 +32,7 @@ class ValidationResult:
     errors: list[RuleError] = field(default_factory=list)
     value: Any = None
 
-    def merge(self, other: "ValidationResult") -> "ValidationResult":
+    def merge(self, other: ValidationResult) -> ValidationResult:
         return ValidationResult(
             valid=self.valid and other.valid,
             errors=[*self.errors, *other.errors],
@@ -269,7 +269,7 @@ class Guard:
     fail_fast: bool = False
     errors: list[RuleError] = field(default_factory=list)
 
-    def check(self, rule_obj: Rule, field_name: str | None = None) -> "Guard":
+    def check(self, rule_obj: Rule, field_name: str | None = None) -> Guard:
         target = self._select(field_name) if field_name else self.value
         result = rule_obj(target)
         if not result.valid:
