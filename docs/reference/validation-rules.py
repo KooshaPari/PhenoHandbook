@@ -1,14 +1,15 @@
 # Validation rules reference
 
-Reference implementation absorbed from the Guardis workstream.
+# Reference implementation absorbed from the Guardis workstream.
 
 """Composable validation helpers absorbed from the Guardis workstream."""
 
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Protocol, TypeVar
+from typing import Any, Protocol, TypeVar
 from urllib.parse import urlparse
 
 T = TypeVar("T")
@@ -44,7 +45,11 @@ def success(value: Any = None) -> ValidationResult:
 
 
 def failure(message: str, field: str = "", value: Any = None) -> ValidationResult:
-    return ValidationResult(valid=False, errors=[RuleError(field=field, message=message, value=value)], value=value)
+    return ValidationResult(
+        valid=False,
+        errors=[RuleError(field=field, message=message, value=value)],
+        value=value,
+    )
 
 
 def create_error(message: str, field: str = "", value: Any = None) -> RuleError:
@@ -66,7 +71,9 @@ def rule(name: str, fn: Callable[[Any], bool], message: str | None = None) -> Ru
             ok = bool(fn(value))
         except Exception as exc:  # noqa: BLE001
             return failure(f"{name}: {exc}", value=value)
-        return success(value) if ok else failure(message or f"{name} failed", value=value)
+        return (
+            success(value) if ok else failure(message or f"{name} failed", value=value)
+        )
 
     return _rule
 
@@ -79,7 +86,9 @@ def rule_fn(fn: Callable[[Any], Any]) -> Rule:
 
 
 def required() -> Rule:
-    return rule("required", lambda value: value is not None and value != "", "value is required")
+    return rule(
+        "required", lambda value: value is not None and value != "", "value is required"
+    )
 
 
 def not_null() -> Rule:
@@ -91,20 +100,36 @@ def not_undefined() -> Rule:
 
 
 def not_empty() -> Rule:
-    return rule("not_empty", lambda value: value is not None and len(value) > 0, "value must not be empty")
+    return rule(
+        "not_empty",
+        lambda value: value is not None and len(value) > 0,
+        "value must not be empty",
+    )
 
 
 def length_min(limit: int) -> Rule:
-    return rule("min_length", lambda value: value is not None and len(value) >= limit, f"length must be >= {limit}")
+    return rule(
+        "min_length",
+        lambda value: value is not None and len(value) >= limit,
+        f"length must be >= {limit}",
+    )
 
 
 def length_max(limit: int) -> Rule:
-    return rule("max_length", lambda value: value is not None and len(value) <= limit, f"length must be <= {limit}")
+    return rule(
+        "max_length",
+        lambda value: value is not None and len(value) <= limit,
+        f"length must be <= {limit}",
+    )
 
 
 def matches(pattern: str | re.Pattern[str]) -> Rule:
     regex = re.compile(pattern) if isinstance(pattern, str) else pattern
-    return rule("matches", lambda value: value is not None and bool(regex.search(str(value))), f"value must match {regex.pattern}")
+    return rule(
+        "matches",
+        lambda value: value is not None and bool(regex.search(str(value))),
+        f"value must match {regex.pattern}",
+    )
 
 
 def email() -> Rule:
@@ -122,23 +147,43 @@ def url() -> Rule:
 
 
 def min(limit: float) -> Rule:
-    return rule("min", lambda value: value is not None and value >= limit, f"value must be >= {limit}")
+    return rule(
+        "min",
+        lambda value: value is not None and value >= limit,
+        f"value must be >= {limit}",
+    )
 
 
 def max(limit: float) -> Rule:
-    return rule("max", lambda value: value is not None and value <= limit, f"value must be <= {limit}")
+    return rule(
+        "max",
+        lambda value: value is not None and value <= limit,
+        f"value must be <= {limit}",
+    )
 
 
 def positive() -> Rule:
-    return rule("positive", lambda value: value is not None and value > 0, "value must be positive")
+    return rule(
+        "positive",
+        lambda value: value is not None and value > 0,
+        "value must be positive",
+    )
 
 
 def integer() -> Rule:
-    return rule("integer", lambda value: isinstance(value, int) and not isinstance(value, bool), "value must be an integer")
+    return rule(
+        "integer",
+        lambda value: isinstance(value, int) and not isinstance(value, bool),
+        "value must be an integer",
+    )
 
 
 def in_range(start: float, end: float) -> Rule:
-    return rule("in_range", lambda value: value is not None and start <= value <= end, f"value must be in range [{start}, {end}]")
+    return rule(
+        "in_range",
+        lambda value: value is not None and start <= value <= end,
+        f"value must be in range [{start}, {end}]",
+    )
 
 
 def collection_not_empty() -> Rule:
@@ -154,15 +199,27 @@ def collection_max_length(limit: int) -> Rule:
 
 
 def collection_all(predicate: Callable[[Any], bool]) -> Rule:
-    return rule("all", lambda value: value is not None and all(predicate(item) for item in value), "all items must pass")
+    return rule(
+        "all",
+        lambda value: value is not None and all(predicate(item) for item in value),
+        "all items must pass",
+    )
 
 
 def collection_any(predicate: Callable[[Any], bool]) -> Rule:
-    return rule("any", lambda value: value is not None and any(predicate(item) for item in value), "at least one item must pass")
+    return rule(
+        "any",
+        lambda value: value is not None and any(predicate(item) for item in value),
+        "at least one item must pass",
+    )
 
 
 def collection_unique() -> Rule:
-    return rule("unique", lambda value: value is not None and len(set(value)) == len(list(value)), "items must be unique")
+    return rule(
+        "unique",
+        lambda value: value is not None and len(set(value)) == len(list(value)),
+        "items must be unique",
+    )
 
 
 def and_(*rules: Rule) -> Rule:
@@ -218,14 +275,19 @@ class Guard:
         if not result.valid:
             if field_name:
                 self.errors.extend(
-                    [RuleError(field=field_name, message=err.message, value=target) for err in result.errors]
+                    [
+                        RuleError(field=field_name, message=err.message, value=target)
+                        for err in result.errors
+                    ]
                 )
             else:
                 self.errors.extend(result.errors)
         return self
 
     def validate(self) -> ValidationResult:
-        return ValidationResult(valid=not self.errors, errors=list(self.errors), value=self.value)
+        return ValidationResult(
+            valid=not self.errors, errors=list(self.errors), value=self.value
+        )
 
     def _select(self, field_name: str) -> Any:
         if isinstance(self.value, dict):
@@ -241,4 +303,3 @@ class Guard:
 
 def guard(value: Any, fail_fast: bool = False) -> Guard:
     return Guard(value=value, fail_fast=fail_fast)
-
