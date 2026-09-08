@@ -16,6 +16,7 @@ if [ "$mode" = "off" ]; then
 fi
 
 tmp_diff="$(mktemp)"
+trap 'rm -f "$tmp_diff"' EXIT HUP INT TERM
 git diff --cached --no-color --unified=3 > "$tmp_diff"
 
 if [ ! -s "$tmp_diff" ]; then
@@ -65,7 +66,7 @@ function has_allow(line,    i, token, list, arr, n) {
 # R3 allowlist via regex. The default regex (configurable via
 # HAPPY_PATH_BIG_CONSTANT_ALLOW_REGEX) covers well-known root-cause constants
 # such as the canonical WSM3D VoxelScaleMultiplier=8.0 fix. Override per-repo.
-# Note: gawk's `(?i)` inline flag is silently dropped when a regex is passed
+# Note: gawk `(?i)` inline flag is silently dropped when a regex is passed
 # via a string variable, so we strip the prefix and lower-case both the
 # regex and the input line. Callers already pass `lc` (lowercased body).
 # This keeps the default `(?i)voxelscalemultiplier` and any case-insensitive
@@ -73,7 +74,7 @@ function has_allow(line,    i, token, list, arr, n) {
 function matches_allow_regex(line,    re) {
   re = big_allow_re
   if (re == "") return 0
-  # Strip any leading inline flags (e.g. "(?i)") so they don't end up in
+  # Strip any leading inline flags (e.g. "(?i)") so they do not end up in
   # the matched text. Inline flags accepted: (?i) for case-insensitive.
   sub(/^\(\?[imx]+\)/, "", re)
   re = tolower(re)
@@ -167,14 +168,14 @@ BEGIN {
 
     # R1 fixed-claim-without-user-conf
     if (!is_template && lc ~ /(fixed|works|done|passing|verified|✅|✔|✔️)/) {
-      if (!window_has(NR, /user-confirmed|user-saw|confirmed by user|eyes-on|last-link:/)) {
+      if (!window_has(NR, "user-confirmed|user-saw|confirmed by user|eyes-on|last-link:")) {
         report("r1", file, line_no, body, "user-eye confirmation missing")
       }
     }
 
     # R2 telemetry-only-success
     if (lc ~ /(flag=true|enabled=true|build ok|200 ok|submitcount|executed|compiled|patch applied)/) {
-      if (!window_has(NR, /pixel|screenshot by user|user said|frameMs|measured|observed|last-link:/)) {
+      if (!window_has(NR, "pixel|screenshot by user|user said|framems|measured|observed|last-link:")) {
         report("r2", file, line_no, body, "telemetry-only success")
       }
     }
@@ -187,15 +188,17 @@ BEGIN {
         lc ~ /voxelScale *= *[0-9.]+/ ||
         lc ~ /timeout *= *[0-9]{5,}/ ||
         lc ~ /bufferSize *= *[0-9]{6,}/) {
-      if (!matches_allow_regex(lc) && !has_allow(body) && !window_has(NR, /todo|fixme|hack|root-cause|investigate/)) {
+      if (!matches_allow_regex(lc) && !has_allow(body) && !window_has(NR, "todo|fixme|hack|root-cause|investigate")) {
         report("r3", file, line_no, body, "blunt-force constant assignment")
       }
     }
 
     # R4 iteration-grind
     if (lc ~ /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*[0-9]+/) {
-      if (match(lc, /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*([0-9]+)/, m)) {
-        if ((m[2] + 0) > 20 && !window_has(NR, /confirmedwins|userconfirmed|user-confirmed|confirmed by user|eyes-on|user-saw/)) {
+      if (match(lc, /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*[0-9]+/)) {
+        count_value = substr(lc, RSTART, RLENGTH)
+        sub(/^[^=]*=[[:space:]]*/, "", count_value)
+        if ((count_value + 0) > 20 && !window_has(NR, "confirmedwins|userconfirmed|user-confirmed|confirmed by user|eyes-on|user-saw")) {
           report("r4", file, line_no, body, "iteration/grind without confirmed wins")
         }
       }
@@ -203,14 +206,14 @@ BEGIN {
 
     # R5 build-without-size-perf
     if (lc ~ /(compiled|build ok|npm test|cargo build|dotnet build|go test|mvn test)/ && is_comment(body)) {
-      if (!window_has(NR, /size=|frameMs|mb|ms|seconds|latency|memory|kb|throughput/)) {
+      if (!window_has(NR, "size=|framems|mb|ms|seconds|latency|memory|kb|throughput")) {
         report("r5", file, line_no, body, "build/test claim without size/perf/robustness token")
       }
     }
 
     # R6 stale-code-risk
     if (lc ~ /\b(rebuilt|compiled|tested)\b/ && !is_comment(body)) {
-      if (!window_has(NR, /version=|kill-stale|clear-cache|sha|hash|banner|last-link:/)) {
+      if (!window_has(NR, "version=|kill-stale|clear-cache|sha|hash|banner|last-link:")) {
         report("r6", file, line_no, body, "stale rebuild/test claim without reset/version/badge token")
       }
     }
