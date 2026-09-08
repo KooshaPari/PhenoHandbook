@@ -146,7 +146,9 @@ with project_infra_context("project-a") as ctx:
 
 # Project B reuses global resource
 with project_infra_context("project-b") as ctx:
-    success, info = await ctx.deploy_resource("shared-redis", config, mode=ResourceMode.GLOBAL)
+    success, info = await ctx.deploy_resource(
+        "shared-redis", config, mode=ResourceMode.GLOBAL
+    )
     if info and info.get("is_reused"):
         print("Reused existing global resource!")
 ```

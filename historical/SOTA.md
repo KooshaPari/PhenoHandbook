@@ -337,18 +337,21 @@ import secrets
 import hashlib
 import base64
 
+
 def generate_pkce_challenge() -> tuple[str, str]:
     """Generate PKCE code_verifier and code_challenge."""
     # RFC 7636: 43-128 characters of [A-Z] / [a-z] / [0-9] / "-" / "." / "_" / "~"
-    verifier = base64.urlsafe_b64encode(
-        secrets.token_bytes(32)
-    ).rstrip(b'=').decode('ascii')
-    
+    verifier = (
+        base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b"=").decode("ascii")
+    )
+
     # S256 method: SHA256 hash then base64url encode
-    challenge = base64.urlsafe_b64encode(
-        hashlib.sha256(verifier.encode()).digest()
-    ).rstrip(b'=').decode('ascii')
-    
+    challenge = (
+        base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest())
+        .rstrip(b"=")
+        .decode("ascii")
+    )
+
     return verifier, challenge
 ```
 
@@ -429,6 +432,7 @@ from dataclasses import dataclass
 from typing import Optional
 from enum import Enum
 
+
 class ScopeLevel(Enum):
     GLOBAL = "global"
     GROUP = "group"
@@ -437,18 +441,19 @@ class ScopeLevel(Enum):
     PORTFOLIO = "portfolio"
     PROJECT = "project"
 
+
 @dataclass(frozen=True)
 class CredentialScope:
     level: ScopeLevel
     id: Optional[str] = None
     parent: Optional["CredentialScope"] = None
-    
+
     @property
     def path(self) -> str:
         if self.parent:
             return f"{self.parent.path}/{self.level.value}/{self.id or ''}"
         return f"/{self.level.value}/{self.id or ''}"
-    
+
     def contains(self, other: "CredentialScope") -> bool:
         """Check if this scope contains another scope."""
         if self.level.value > other.level.value:
@@ -613,28 +618,25 @@ from fastmcp import FastMCP, Context
 
 mcp = FastMCP("phenosdk-server")
 
+
 @mcp.tool
-async def get_credentials(
-    scope: str,
-    credential_type: str,
-    context: Context
-) -> dict:
+async def get_credentials(scope: str, credential_type: str, context: Context) -> dict:
     """Retrieve credentials for a scoped resource."""
     # Access authenticated user from context
     user = context.user
-    
+
     # Validate scope access
     if not await validate_scope_access(user, scope):
         raise PermissionError(f"Access denied to scope: {scope}")
-    
+
     # Retrieve credentials
     creds = await credential_service.get(scope, credential_type)
-    
+
     return {
         "scope": scope,
         "type": credential_type,
         "exists": creds is not None,
-        "last_rotated": creds.rotated_at if creds else None
+        "last_rotated": creds.rotated_at if creds else None,
     }
 ```
 
@@ -973,17 +975,18 @@ const creds = new phenosdk.Credential("api-key", {
 import pytest
 from phenosdk.credentials import CredentialManager
 
+
 @pytest.mark.asyncio
 async def test_credential_encryption():
     """Test credential encryption/decryption."""
     manager = CredentialManager()
-    
+
     # Store credential
     await manager.set("test-key", {"secret": "value"})
-    
+
     # Retrieve credential
     result = await manager.get("test-key")
-    
+
     assert result["secret"] == "value"
 ```
 
@@ -1001,12 +1004,12 @@ async def test_oauth_github_flow():
     oauth = GitHubOAuthProvider(
         client_id="test-id",
         client_secret="test-secret",
-        redirect_uri="http://localhost:8080/callback"
+        redirect_uri="http://localhost:8080/callback",
     )
-    
+
     # Generate authorization URL
     url = oauth.get_authorization_url()
-    
+
     assert "github.com/login/oauth/authorize" in url
     assert "client_id=test-id" in url
 ```
@@ -1046,36 +1049,37 @@ async def test_complete_auth_workflow():
 ```python
 from phenosdk.mcp.testing import TestServer, TestClient
 
+
 @pytest.fixture
 async def mcp_test_env():
     """Provide MCP testing environment."""
     server = TestServer()
     await server.start()
-    
+
     # Create multiple clients
-    clients = [
-        TestClient(server.url)
-        for _ in range(10)
-    ]
-    
+    clients = [TestClient(server.url) for _ in range(10)]
+
     yield server, clients
-    
+
     # Cleanup
     for client in clients:
         await client.close()
     await server.stop()
 
+
 @pytest.mark.asyncio
 async def test_concurrent_tool_calls(mcp_test_env):
     """Test concurrent tool execution."""
     server, clients = mcp_test_env
-    
+
     # Execute tools concurrently
-    results = await asyncio.gather(*[
-        client.call_tool("echo", {"message": f"test-{i}"})
-        for i, client in enumerate(clients)
-    ])
-    
+    results = await asyncio.gather(
+        *[
+            client.call_tool("echo", {"message": f"test-{i}"})
+            for i, client in enumerate(clients)
+        ]
+    )
+
     # Verify all succeeded
     assert all(r.success for r in results)
 ```
@@ -1086,26 +1090,27 @@ async def test_concurrent_tool_calls(mcp_test_env):
 import time
 import statistics
 
+
 @pytest.mark.benchmark
 @pytest.mark.asyncio
 async def test_credential_lookup_performance():
     """Benchmark credential lookup latency."""
     manager = CredentialManager()
-    
+
     # Warmup
     for _ in range(100):
         await manager.get("test-key")
-    
+
     # Measure
     times = []
     for _ in range(1000):
         start = time.perf_counter()
         await manager.get("test-key")
         times.append((time.perf_counter() - start) * 1000)
-    
+
     p50 = statistics.median(times)
     p99 = sorted(times)[990]
-    
+
     assert p50 < 5, f"P50 latency {p50}ms exceeds 5ms target"
     assert p99 < 10, f"P99 latency {p99}ms exceeds 10ms target"
 ```

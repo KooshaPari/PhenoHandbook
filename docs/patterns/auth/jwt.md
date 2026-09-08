@@ -129,6 +129,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 import uuid
 
+
 class JwtConfig:
     def __init__(
         self,
@@ -136,7 +137,7 @@ class JwtConfig:
         issuer: str,
         audience: str,
         expiry_hours: int = 24,
-        algorithm: str = "HS256"
+        algorithm: str = "HS256",
     ):
         self.secret = secret
         self.issuer = issuer
@@ -144,19 +145,17 @@ class JwtConfig:
         self.expiry_hours = expiry_hours
         self.algorithm = algorithm
 
+
 class JwtService:
     def __init__(self, config: JwtConfig):
         self._config = config
-    
+
     def generate_token(
-        self,
-        user_id: str,
-        scope: List[str],
-        additional_claims: Optional[dict] = None
+        self, user_id: str, scope: List[str], additional_claims: Optional[dict] = None
     ) -> str:
         now = datetime.utcnow()
         exp = now + timedelta(hours=self._config.expiry_hours)
-        
+
         claims = {
             "sub": user_id,
             "iss": self._config.issuer,
@@ -166,16 +165,12 @@ class JwtService:
             "jti": str(uuid.uuid4()),
             "scope": scope,
         }
-        
+
         if additional_claims:
             claims.update(additional_claims)
-        
-        return jwt.encode(
-            claims,
-            self._config.secret,
-            algorithm=self._config.algorithm
-        )
-    
+
+        return jwt.encode(claims, self._config.secret, algorithm=self._config.algorithm)
+
     def validate_token(self, token: str) -> dict:
         try:
             payload = jwt.decode(
@@ -183,15 +178,15 @@ class JwtService:
                 self._config.secret,
                 algorithms=[self._config.algorithm],
                 issuer=self._config.issuer,
-                audience=self._config.audience
+                audience=self._config.audience,
             )
-            
+
             # Check revocation via phenotype-cache-adapter
             if self._is_revoked(payload["jti"]):
                 raise jwt.InvalidTokenError("Token revoked")
-            
+
             return payload
-            
+
         except jwt.ExpiredSignatureError:
             raise AuthenticationError("Token expired")
         except jwt.InvalidTokenError as e:

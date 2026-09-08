@@ -63,9 +63,7 @@ Option B: Update HubGenerator
 ```python
 from docs_engine.hub.generator import HubGenerator
 
-projects = {
-    "your-project": "/path/to/your-project/docs"
-}
+projects = {"your-project": "/path/to/your-project/docs"}
 ```
 
 ### Step 3: Regenerate Hub

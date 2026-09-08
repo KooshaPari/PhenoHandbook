@@ -1049,8 +1049,10 @@ def test_[service]_publishes_event():
 def test_when_user_is_inactive_should_raise_authentication_error():
     pass
 
+
 def test_when_order_is_confirmed_should_publish_event():
     pass
+
 
 def test_when_payment_fails_should_rollback_transaction():
     pass
@@ -1861,14 +1863,18 @@ class [Auth]Middleware:
 # src/infrastructure/auth/[authz].py
 def require_permission(permission: str):
     """Decorator to check permissions"""
+
     def decorator(func):
         async def wrapper(request: Request, *args, **kwargs):
             user = request.state.user
             if not user.has_permission(permission):
                 raise ForbiddenError(f"Missing permission: {permission}")
             return await func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 # Usage
 @require_permission("resource:write")

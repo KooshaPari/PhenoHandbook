@@ -181,59 +181,59 @@ from behave import given, when, then
 from typing import Dict
 import requests
 
+
 # Context holds state across steps
 @given('a registered user with email "{email}" and password "{password}"')
 def step_create_user(context, email: str, password: str):
     """Set up a registered user in the test environment."""
     context.user_email = email
     context.user_password = password
-    
+
     # Create user via API or database fixture
     response = requests.post(
         f"{context.base_url}/api/test/users",
-        json={"email": email, "password": password}
+        json={"email": email, "password": password},
     )
     assert response.status_code == 201, f"Failed to create test user: {response.text}"
     context.user_id = response.json()["id"]
-    
+
     # Store for cleanup
     context.created_users.append(context.user_id)
 
-@when('the user attempts to log in with correct credentials')
+
+@when("the user attempts to log in with correct credentials")
 def step_login_correct(context):
     """Execute login with stored credentials."""
     context.response = requests.post(
         f"{context.base_url}/api/auth/login",
-        json={
-            "email": context.user_email,
-            "password": context.user_password
-        }
+        json={"email": context.user_email, "password": context.user_password},
     )
+
 
 @when('the user attempts to log in with password "{password}"')
 def step_login_with_password(context, password: str):
     """Execute login with custom password."""
     context.response = requests.post(
         f"{context.base_url}/api/auth/login",
-        json={
-            "email": context.user_email,
-            "password": password
-        }
+        json={"email": context.user_email, "password": password},
     )
-    
+
     # Capture audit logs
     context.audit_logs = requests.get(
         f"{context.base_url}/api/test/audit-logs",
-        params={"user_email": context.user_email}
+        params={"user_email": context.user_email},
     ).json()
 
-@then('the login should succeed')
+
+@then("the login should succeed")
 def step_login_success(context):
     """Assert successful login."""
-    assert context.response.status_code == 200, \
+    assert context.response.status_code == 200, (
         f"Expected 200, got {context.response.status_code}: {context.response.text}"
+    )
 
-@then('the user should receive an access token')
+
+@then("the user should receive an access token")
 def step_receive_token(context):
     """Assert token presence and format."""
     data = context.response.json()
@@ -242,47 +242,57 @@ def step_receive_token(context):
     assert len(data["access_token"]) > 0, "Access token is empty"
     context.access_token = data["access_token"]
 
-@then('the token should expire in {seconds:d} seconds')
+
+@then("the token should expire in {seconds:d} seconds")
 def step_token_expiry(context, seconds: int):
     """Assert token expiry time."""
     data = context.response.json()
-    assert data["expires_in"] == seconds, \
+    assert data["expires_in"] == seconds, (
         f"Expected expiry {seconds}s, got {data['expires_in']}s"
+    )
+
 
 @then('the login should fail with error "{message}"')
 def step_login_failure(context, message: str):
     """Assert login failure with specific message."""
-    assert context.response.status_code in [401, 403], \
+    assert context.response.status_code in [401, 403], (
         f"Expected 401/403, got {context.response.status_code}"
-    
+    )
+
     data = context.response.json()
-    assert data.get("error") == message, \
+    assert data.get("error") == message, (
         f"Expected error '{message}', got '{data.get('error')}'"
+    )
+
 
 @then('the user should receive an error code "{code}"')
 def step_error_code(context, code: str):
     """Assert error code in response."""
     data = context.response.json()
-    assert data.get("error_code") == code, \
+    assert data.get("error_code") == code, (
         f"Expected error_code '{code}', got '{data.get('error_code')}'"
+    )
 
-@then('the failed attempt should be logged')
+
+@then("the failed attempt should be logged")
 def step_audit_log(context):
     """Assert failed login is recorded in audit logs."""
     recent_failures = [
-        log for log in context.audit_logs
+        log
+        for log in context.audit_logs
         if log["event_type"] == "AUTH_FAILURE"
         and log["user_email"] == context.user_email
     ]
-    
-    assert len(recent_failures) > 0, \
-        "Expected failed login to be logged in audit log"
+
+    assert len(recent_failures) > 0, "Expected failed login to be logged in audit log"
+
 
 # environment.py for setup
 def before_all(context):
     """Global test setup."""
     context.base_url = context.config.userdata.get("base_url", "http://localhost:8080")
     context.created_users = []
+
 
 def after_scenario(context, scenario):
     """Cleanup after each scenario."""

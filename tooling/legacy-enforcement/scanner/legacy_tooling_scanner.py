@@ -435,14 +435,19 @@ def main(argv: list[str]) -> int:
 
     try:
         policy = load_policy(policy_path)
-    except (FileNotFoundError, ValueError) as e:
+    except (FileNotFoundError, ValueError, TypeError) as e:
         print(f"error: failed to load policy: {e}", file=sys.stderr)
+        return 2
+
+    output_paths = [Path(args.output_json).resolve(), Path(args.output_md).resolve()]
+    if any(not output.is_relative_to(repo_root) for output in output_paths):
+        print("error: report outputs must remain within repo-root", file=sys.stderr)
         return 2
 
     policy["_path"] = str(policy_path)
     result = scan(repo_root, policy)
-    write_json_report(result, Path(args.output_json))
-    write_markdown_report(result, Path(args.output_md))
+    write_json_report(result, output_paths[0])
+    write_markdown_report(result, output_paths[1])
 
     summary = (
         f"scanned={result.files_scanned} "

@@ -367,13 +367,15 @@ from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class RetryStrategy(Enum):
     FIXED = "fixed"
     LINEAR = "linear"
     EXPONENTIAL = "exponential"
     EXPONENTIAL_JITTER = "exponential_jitter"
+
 
 @dataclass
 class RetryConfig:
@@ -383,132 +385,129 @@ class RetryConfig:
     max_delay_ms: float = 10_000
     retry_if: Optional[Callable[[Exception], bool]] = None
 
+
 class RetryError(Exception):
     def __init__(self, message: str, attempts: int, last_error: Exception):
         super().__init__(message)
         self.attempts = attempts
         self.last_error = last_error
 
+
 class Retry:
     """Retry utility with configurable strategies."""
-    
+
     @staticmethod
     def calculate_delay(
-        strategy: RetryStrategy,
-        attempt: int,
-        base_delay_ms: float,
-        max_delay_ms: float
+        strategy: RetryStrategy, attempt: int, base_delay_ms: float, max_delay_ms: float
     ) -> float:
         """Calculate delay in seconds."""
         if strategy == RetryStrategy.FIXED:
             return base_delay_ms / 1000
-        
+
         elif strategy == RetryStrategy.LINEAR:
             return (base_delay_ms * (attempt + 1)) / 1000
-        
+
         elif strategy == RetryStrategy.EXPONENTIAL:
-            delay = base_delay_ms * (2 ** attempt)
+            delay = base_delay_ms * (2**attempt)
             return min(delay, max_delay_ms) / 1000
-        
+
         elif strategy == RetryStrategy.EXPONENTIAL_JITTER:
-            base = base_delay_ms * (2 ** attempt)
+            base = base_delay_ms * (2**attempt)
             base = min(base, max_delay_ms)
             jitter = base * 0.25
             delay = random.uniform(base - jitter, base + jitter)
             return delay / 1000
-    
+
     @staticmethod
     async def execute(
-        operation: Callable[..., T],
-        config: RetryConfig = None,
-        *args,
-        **kwargs
+        operation: Callable[..., T], config: RetryConfig = None, *args, **kwargs
     ) -> T:
         """Execute operation with retry logic."""
         config = config or RetryConfig()
         last_error = None
-        
+
         for attempt in range(config.max_attempts):
             try:
                 result = await operation(*args, **kwargs)
-                
+
                 if attempt > 0:
                     print(f"✓ Operation succeeded after {attempt + 1} attempts")
-                
+
                 return result
-                
+
             except Exception as e:
                 last_error = e
-                
+
                 # Check if we should retry
                 should_retry = True
                 if config.retry_if:
                     should_retry = config.retry_if(e)
-                
+
                 if not should_retry or attempt == config.max_attempts - 1:
                     raise RetryError(
-                        f"Failed after {attempt + 1} attempts: {e}",
-                        attempt + 1,
-                        e
+                        f"Failed after {attempt + 1} attempts: {e}", attempt + 1, e
                     ) from e
-                
+
                 # Calculate and wait
                 delay = Retry.calculate_delay(
-                    config.strategy,
-                    attempt,
-                    config.base_delay_ms,
-                    config.max_delay_ms
+                    config.strategy, attempt, config.base_delay_ms, config.max_delay_ms
                 )
-                
-                print(f"⚠ Attempt {attempt + 1} failed: {e}. Retrying in {delay:.2f}s...")
+
+                print(
+                    f"⚠ Attempt {attempt + 1} failed: {e}. Retrying in {delay:.2f}s..."
+                )
                 await asyncio.sleep(delay)
-        
+
         raise RetryError(
             f"Failed after {config.max_attempts} attempts",
             config.max_attempts,
-            last_error
+            last_error,
         )
-    
+
     @staticmethod
     def with_retry(config: RetryConfig = None):
         """Decorator for retry functionality."""
+
         def decorator(func):
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 return await Retry.execute(func, config, *args, **kwargs)
+
             return wrapper
+
         return decorator
+
 
 # Predefined configs
 class RetryPolicies:
     """Common retry policies."""
-    
+
     API_CALLS = RetryConfig(
         max_attempts=3,
         strategy=RetryStrategy.EXPONENTIAL_JITTER,
         base_delay_ms=200,
-        max_delay_ms=5_000
+        max_delay_ms=5_000,
     )
-    
+
     DATABASE = RetryConfig(
         max_attempts=5,
         strategy=RetryStrategy.EXPONENTIAL_JITTER,
         base_delay_ms=100,
         max_delay_ms=3_000,
-        retry_if=lambda e: "connection" in str(e).lower() or "timeout" in str(e).lower()
+        retry_if=lambda e: (
+            "connection" in str(e).lower() or "timeout" in str(e).lower()
+        ),
     )
-    
+
     IDEMPOTENT = RetryConfig(
-        max_attempts=3,
-        strategy=RetryStrategy.FIXED,
-        base_delay_ms=500
+        max_attempts=3, strategy=RetryStrategy.FIXED, base_delay_ms=500
     )
-    
+
     CRITICAL = RetryConfig(
         max_attempts=10,
         strategy=RetryStrategy.EXPONENTIAL_JITTER,
         base_delay_ms=500,
-        max_delay_ms=60_000
+        max_delay_ms=60_000,
     )
 ```
 
@@ -517,24 +516,22 @@ class RetryPolicies:
 ```python
 from phenotype_retry import Retry, RetryPolicies, RetryError
 
+
 # Basic retry
 async def fetch_user(user_id: str) -> User:
-    return await Retry.execute(
-        lambda: api.get_user(user_id),
-        RetryPolicies.API_CALLS
-    )
+    return await Retry.execute(lambda: api.get_user(user_id), RetryPolicies.API_CALLS)
+
 
 # Database retry
 async def save_order(order: Order) -> None:
-    return await Retry.execute(
-        lambda: db.insert_order(order),
-        RetryPolicies.DATABASE
-    )
+    return await Retry.execute(lambda: db.insert_order(order), RetryPolicies.DATABASE)
+
 
 # Decorator
 @Retry.with_retry(RetryPolicies.CRITICAL)
 async def process_payment(payment: PaymentRequest) -> PaymentResult:
     return await payment_gateway.charge(payment)
+
 
 # Custom retry logic
 async def custom_operation():
@@ -543,9 +540,9 @@ async def custom_operation():
         strategy=RetryStrategy.EXPONENTIAL,
         base_delay_ms=100,
         max_delay_ms=10_000,
-        retry_if=lambda e: isinstance(e, (TimeoutError, ConnectionError))
+        retry_if=lambda e: isinstance(e, (TimeoutError, ConnectionError)),
     )
-    
+
     return await Retry.execute(operation, config)
 ```
 
