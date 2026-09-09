@@ -23,6 +23,9 @@ fi
 tmp_diff="$(mktemp)"
 trap 'rm -f "$tmp_diff"' EXIT HUP INT TERM
 if [ -n "${HAPPY_PATH_BASE:-}" ]; then
+  if [ "$HAPPY_PATH_BASE" = "0000000000000000000000000000000000000000" ]; then
+    HAPPY_PATH_BASE=$(git hash-object -w -t tree --stdin </dev/null)
+  fi
   git diff --no-renames --no-color --unified=3 "$HAPPY_PATH_BASE" "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
 else
   git diff --cached --no-renames --no-color --unified=3 > "$tmp_diff"
@@ -168,7 +171,7 @@ FNR == NR { diff_lines[FNR] = $0; total_lines = FNR; next }
     is_template = (file ~ /COMMIT_EDITMSG|MERGE_MSG|PULL_REQUEST_TEMPLATE|pull_request_template\.md/)
 
     # R1 fixed-claim-without-user-conf
-    if (!is_template && lc ~ /(^|[[:space:]])(fixed|works|done|passing|verified)([[:space:].,!;:]|$)|✅|✔|✔️/) {
+    if (!is_template && lc ~ /(^|[^[:alnum:]_.])(fixed|works|done|passing|verified)([^[:alnum:]_]|$)|✅|✔|✔️/) {
       if (!window_has(FNR, "user-confirmed|user-saw|confirmed by user|eyes-on|last-link:")) {
         report("r1", file, line_no, body, "user-eye confirmation missing")
       }

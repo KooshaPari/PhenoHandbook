@@ -1,3 +1,5 @@
+// Traceability: FUNCTIONAL_REQUIREMENTS.md FR-PH-007;
+// governance outcomes: docs/governance/happy-path-checklist.md.
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -5,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { test, expect } from "vitest";
 
 const guard = resolve("governance/happy-path-precommit.sh");
-for (const [text, expected] of [["feature fixed", 1], ["ordinary change", 0], ["workspace uses RetryStrategy.FIXED", 0], ["✅", 1], ["feature fixed\nEvidence: user-confirmed", 0]] as const) {
+for (const [text, expected] of [["feature fixed", 1], ["ordinary change", 0], ["[fixed]", 1], ["`verified`", 1], ["workspace uses RetryStrategy.FIXED", 0], ["✅", 1], ["feature fixed\nEvidence: user-confirmed", 0]] as const) {
   test(`production guard exit ${expected}: ${text}`, () => {
     const dir = mkdtempSync(join(tmpdir(), "handbook-guard-"));
     try {
@@ -68,3 +70,23 @@ for (const revisions of [{ HAPPY_PATH_BASE: "missing-revision", HAPPY_PATH_HEAD:
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 }
+
+
+test("created main push scans the complete committed tree", () => {
+  const dir = mkdtempSync(join(tmpdir(), "handbook-created-ref-"));
+  const git = (...args: string[]) => spawnSync("git", ["-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", ...args], { cwd: dir, encoding: "utf8" });
+  try {
+    expect(git("init", "--quiet", "--initial-branch=main").status).toBe(0);
+    writeFileSync(join(dir, "change.txt"), "ordinary change\n");
+    expect(git("add", ".").status).toBe(0);
+    expect(git("commit", "-m", "initial").status).toBe(0);
+    const env = { ...process.env, HAPPY_PATH_FAIL_ON: "block", HAPPY_PATH_BASE: "0".repeat(40), HAPPY_PATH_HEAD: "HEAD" };
+    const clean = spawnSync("sh", [guard], { cwd: dir, encoding: "utf8", env });
+    expect(clean.status, clean.stdout + clean.stderr).toBe(0);
+    writeFileSync(join(dir, "change.txt"), "feature fixed\n");
+    expect(git("add", ".").status).toBe(0);
+    expect(git("commit", "-m", "claim").status).toBe(0);
+    const violation = spawnSync("sh", [guard], { cwd: dir, encoding: "utf8", env });
+    expect(violation.status, violation.stdout + violation.stderr).toBe(1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
