@@ -440,7 +440,11 @@ def main(argv: list[str]) -> int:
         return 2
 
     output_paths = [Path(args.output_json).resolve(), Path(args.output_md).resolve()]
-    if any(not output.is_relative_to(repo_root) for output in output_paths):
+    if any(
+        not output.is_relative_to(repo_root)
+        or (output.exists() and not output.is_file())
+        for output in output_paths
+    ):
         print("error: report outputs must remain within repo-root", file=sys.stderr)
         return 2
 
