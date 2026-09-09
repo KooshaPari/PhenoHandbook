@@ -1,4 +1,4 @@
-"""Regression coverage for the scanner unreadable-file contract."""
+"""Validate FUNCTIONAL_REQUIREMENTS.md FR-PH-009 unreadable-file handling."""
 
 import tempfile
 import unittest
