@@ -15,12 +15,17 @@ if [ "$mode" = "off" ]; then
   exit 0
 fi
 
+if [ -n "${HAPPY_PATH_HEAD:-}" ] && [ -z "${HAPPY_PATH_BASE:-}" ]; then
+  echo "error: HAPPY_PATH_HEAD requires HAPPY_PATH_BASE" >&2
+  exit 2
+fi
+
 tmp_diff="$(mktemp)"
 trap 'rm -f "$tmp_diff"' EXIT HUP INT TERM
 if [ -n "${HAPPY_PATH_BASE:-}" ]; then
-  git diff --no-color --unified=3 "$HAPPY_PATH_BASE" "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
+  git diff --no-renames --no-color --unified=3 "$HAPPY_PATH_BASE" "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
 else
-  git diff --cached --no-color --unified=3 > "$tmp_diff"
+  git diff --cached --no-renames --no-color --unified=3 > "$tmp_diff"
 fi
 
 if [ ! -s "$tmp_diff" ]; then
