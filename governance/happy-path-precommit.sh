@@ -23,10 +23,15 @@ fi
 tmp_diff="$(mktemp)"
 trap 'rm -f "$tmp_diff"' EXIT HUP INT TERM
 if [ -n "${HAPPY_PATH_BASE:-}" ]; then
+  # GitHub sends an all-zero `before` SHA when a push creates the ref. A
+  # root diff covers the complete new commit without resolving that SHA.
   if [ "$HAPPY_PATH_BASE" = "0000000000000000000000000000000000000000" ]; then
-    HAPPY_PATH_BASE=$(git hash-object -w -t tree --stdin </dev/null)
+    git diff-tree --root --no-commit-id --no-renames --no-color --unified=3 -r \
+      "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
+  else
+    git diff --no-renames --no-color --unified=3 \
+      "$HAPPY_PATH_BASE" "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
   fi
-  git diff --no-renames --no-color --unified=3 "$HAPPY_PATH_BASE" "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
 else
   git diff --cached --no-renames --no-color --unified=3 > "$tmp_diff"
 fi
