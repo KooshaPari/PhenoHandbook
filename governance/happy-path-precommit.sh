@@ -15,8 +15,26 @@ if [ "$mode" = "off" ]; then
   exit 0
 fi
 
+if [ -n "${HAPPY_PATH_HEAD:-}" ] && [ -z "${HAPPY_PATH_BASE:-}" ]; then
+  echo "error: HAPPY_PATH_HEAD requires HAPPY_PATH_BASE" >&2
+  exit 2
+fi
+
 tmp_diff="$(mktemp)"
-git diff --cached --no-color --unified=3 > "$tmp_diff"
+trap 'rm -f "$tmp_diff"' EXIT HUP INT TERM
+if [ -n "${HAPPY_PATH_BASE:-}" ]; then
+  # GitHub sends an all-zero `before` SHA when a push creates the ref. A
+  # root diff covers the complete new commit without resolving that SHA.
+  if [ "$HAPPY_PATH_BASE" = "0000000000000000000000000000000000000000" ]; then
+    git diff-tree --root --no-commit-id --no-renames --no-color --unified=3 -r \
+      "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
+  else
+    git diff --no-renames --no-color --unified=3 \
+      "$HAPPY_PATH_BASE" "${HAPPY_PATH_HEAD:-HEAD}" -- > "$tmp_diff"
+  fi
+else
+  git diff --cached --no-renames --no-color --unified=3 > "$tmp_diff"
+fi
 
 if [ ! -s "$tmp_diff" ]; then
   rm -f "$tmp_diff"
@@ -62,21 +80,13 @@ function has_allow(line,    i, token, list, arr, n) {
   return 0
 }
 
-# R3 allowlist via regex. The default regex (configurable via
-# HAPPY_PATH_BIG_CONSTANT_ALLOW_REGEX) covers well-known root-cause constants
-# such as the canonical WSM3D VoxelScaleMultiplier=8.0 fix. Override per-repo.
-# Note: gawk's `(?i)` inline flag is silently dropped when a regex is passed
-# via a string variable, so we strip the prefix and lower-case both the
-# regex and the input line. Callers already pass `lc` (lowercased body).
-# This keeps the default `(?i)voxelscalemultiplier` and any case-insensitive
-# user override effective on both gawk and POSIX awk.
+# POSIX ERE overrides are case-sensitive unless prefixed with (?i).
 function matches_allow_regex(line,    re) {
   re = big_allow_re
   if (re == "") return 0
-  # Strip any leading inline flags (e.g. "(?i)") so they don't end up in
-  # the matched text. Inline flags accepted: (?i) for case-insensitive.
-  sub(/^\(\?[imx]+\)/, "", re)
-  re = tolower(re)
+  if (sub(/^\(\?i\)/, "", re)) {
+    return (tolower(line) ~ tolower(re)) ? 1 : 0
+  }
   return (line ~ re) ? 1 : 0
 }
 
@@ -84,7 +94,8 @@ function window_has(idx, pattern,    i, s) {
   for (i = idx; i <= idx + 2; i++) {
     if (i > total_lines) break
     s = diff_lines[i]
-    if (tolower(s) ~ pattern) return 1
+    if (s ~ /^diff --git / || s ~ /^@@ /) break
+    if (substr(s, 1, 1) == "+" && s !~ /^\+\+\+/ && tolower(s) ~ pattern) return 1
   }
   return 0
 }
@@ -117,10 +128,9 @@ BEGIN {
   total_lines = 0
 }
 
-{
-  total_lines = NR
-  diff_lines[NR] = $0
+FNR == NR { diff_lines[FNR] = $0; total_lines = FNR; next }
 
+{
   if ($0 ~ /^diff --git /) {
     file = $3
     sub(/^b\//, "", file)
@@ -130,7 +140,7 @@ BEGIN {
     # source naturally contain the words we lint for (e.g. literal "flag=true"
     # as an example, or the regex pattern /fixed|works|done|.../ itself).
     # Extending the skip-list: HAPPY_PATH_POLICY_SKIP (comma-sep glob substrings).
-    skip_pat = "^(governance/|docs/governance/|docs/ai-dd-pitfalls|/ai-dd-pitfalls|/feedback_aidd_hardening|/CLAUDE\\.md)"
+    skip_pat = "^(tests/governance-enforcement\\.test\\.ts$|governance/|docs/governance/|docs/ai-dd-pitfalls|/ai-dd-pitfalls|/feedback_aidd_hardening|/CLAUDE\\.md)"
     extra = ENVIRON["HAPPY_PATH_POLICY_SKIP"]
     if (extra != "") {
       n = split(extra, arr, ",")
@@ -166,15 +176,15 @@ BEGIN {
     is_template = (file ~ /COMMIT_EDITMSG|MERGE_MSG|PULL_REQUEST_TEMPLATE|pull_request_template\.md/)
 
     # R1 fixed-claim-without-user-conf
-    if (!is_template && lc ~ /(fixed|works|done|passing|verified|✅|✔|✔️)/) {
-      if (!window_has(NR, /user-confirmed|user-saw|confirmed by user|eyes-on|last-link:/)) {
+    if (!is_template && lc ~ /(^|[^[:alnum:]_.])(fixed|works|done|passing|verified)([^[:alnum:]_]|$)|✅|✔|✔️/) {
+      if (!window_has(FNR, "user-confirmed|user-saw|confirmed by user|eyes-on|last-link:")) {
         report("r1", file, line_no, body, "user-eye confirmation missing")
       }
     }
 
     # R2 telemetry-only-success
     if (lc ~ /(flag=true|enabled=true|build ok|200 ok|submitcount|executed|compiled|patch applied)/) {
-      if (!window_has(NR, /pixel|screenshot by user|user said|frameMs|measured|observed|last-link:/)) {
+      if (!window_has(FNR, "pixel|screenshot by user|user said|framems|measured|observed|last-link:")) {
         report("r2", file, line_no, body, "telemetry-only success")
       }
     }
@@ -187,15 +197,17 @@ BEGIN {
         lc ~ /voxelScale *= *[0-9.]+/ ||
         lc ~ /timeout *= *[0-9]{5,}/ ||
         lc ~ /bufferSize *= *[0-9]{6,}/) {
-      if (!matches_allow_regex(lc) && !has_allow(body) && !window_has(NR, /todo|fixme|hack|root-cause|investigate/)) {
+      if (!matches_allow_regex(body) && !has_allow(body) && !window_has(FNR, "todo|fixme|hack|root-cause|investigate")) {
         report("r3", file, line_no, body, "blunt-force constant assignment")
       }
     }
 
     # R4 iteration-grind
     if (lc ~ /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*[0-9]+/) {
-      if (match(lc, /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*([0-9]+)/, m)) {
-        if ((m[2] + 0) > 20 && !window_has(NR, /confirmedwins|userconfirmed|user-confirmed|confirmed by user|eyes-on|user-saw/)) {
+      if (match(lc, /(itercount|retrycount|attemptcount|loopcount|tries)[[:space:]]*=[[:space:]]*[0-9]+/)) {
+        count_value = substr(lc, RSTART, RLENGTH)
+        sub(/^[^=]*=[[:space:]]*/, "", count_value)
+        if ((count_value + 0) > 20 && !window_has(FNR, "confirmedwins|userconfirmed|user-confirmed|confirmed by user|eyes-on|user-saw")) {
           report("r4", file, line_no, body, "iteration/grind without confirmed wins")
         }
       }
@@ -203,14 +215,14 @@ BEGIN {
 
     # R5 build-without-size-perf
     if (lc ~ /(compiled|build ok|npm test|cargo build|dotnet build|go test|mvn test)/ && is_comment(body)) {
-      if (!window_has(NR, /size=|frameMs|mb|ms|seconds|latency|memory|kb|throughput/)) {
+      if (!window_has(FNR, "size=|framems|mb|ms|seconds|latency|memory|kb|throughput")) {
         report("r5", file, line_no, body, "build/test claim without size/perf/robustness token")
       }
     }
 
     # R6 stale-code-risk
     if (lc ~ /\b(rebuilt|compiled|tested)\b/ && !is_comment(body)) {
-      if (!window_has(NR, /version=|kill-stale|clear-cache|sha|hash|banner|last-link:/)) {
+      if (!window_has(FNR, "version=|kill-stale|clear-cache|sha|hash|banner|last-link:")) {
         report("r6", file, line_no, body, "stale rebuild/test claim without reset/version/badge token")
       }
     }
@@ -237,7 +249,7 @@ END {
   print "Summary: no failures."
   exit 0
 }
-' "$tmp_diff"
+' "$tmp_diff" "$tmp_diff"
 
 status=$?
 rm -f "$tmp_diff"

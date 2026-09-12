@@ -41,16 +41,15 @@ import json
 import os
 import re
 import sys
-from dataclasses import dataclass, field, asdict
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 try:
     import yaml  # PyYAML
 except ImportError:  # pragma: no cover - surfaces a clean error in CI logs.
-    sys.stderr.write(
-        "error: PyYAML is required. Install with `pip install pyyaml`.\n"
-    )
+    sys.stderr.write("error: PyYAML is required. Install with `pip install pyyaml`.\n")
     raise
 
 # ─── Severity ordering (lower number = more severe) ────────────────────────────
@@ -75,11 +74,40 @@ DEFAULT_SKIP_DIRS = {
 
 # ─── Binary / oversized file extensions we never scan ─────────────────────────
 BINARY_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".webp", ".svg",
-    ".pdf", ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar",
-    ".mp3", ".mp4", ".mov", ".wav", ".ogg", ".flac",
-    ".ttf", ".otf", ".woff", ".woff2", ".eot",
-    ".pyc", ".class", ".o", ".so", ".dll", ".dylib", ".exe",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".webp",
+    ".svg",
+    ".pdf",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".bz2",
+    ".xz",
+    ".7z",
+    ".rar",
+    ".mp3",
+    ".mp4",
+    ".mov",
+    ".wav",
+    ".ogg",
+    ".flac",
+    ".ttf",
+    ".otf",
+    ".woff",
+    ".woff2",
+    ".eot",
+    ".pyc",
+    ".class",
+    ".o",
+    ".so",
+    ".dll",
+    ".dylib",
+    ".exe",
 }
 
 
@@ -140,6 +168,7 @@ class ScanResult:
 # so `safe_load` is more than sufficient and gives us the full feature set
 # (block scalars, anchors, multiline strings) without us reinventing it.
 
+
 class _PolicyLoader(yaml.SafeLoader):
     """SafeLoader subclass placeholder.
 
@@ -157,13 +186,12 @@ def load_policy(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as fh:
         data = yaml.load(fh, Loader=_PolicyLoader)
     if not isinstance(data, dict):
-        raise ValueError(
-            f"Policy root must be a mapping, got {type(data).__name__}"
-        )
+        raise TypeError(f"Policy root must be a mapping, got {type(data).__name__}")
     return data
 
 
 # ─── File discovery ────────────────────────────────────────────────────────────
+
 
 def iter_files(repo_root: Path, skip_dirs: set[str]) -> Iterable[Path]:
     """Yield files under repo_root, skipping noisy directories."""
@@ -204,16 +232,14 @@ def read_text(path: Path) -> str | None:
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
-        try:
-            text = data.decode("latin-1")
-        except Exception:
-            return None
+        return None
     # Normalize CRLF / CR line endings to LF so regex `$` and line
     # accounting work the same on Windows-checked-out files.
     return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 # ─── Rule application ──────────────────────────────────────────────────────────
+
 
 def find_forbid_matches(text: str, patterns: list[str]) -> Iterable[tuple[int, str]]:
     for pat in patterns:
@@ -285,6 +311,7 @@ def apply_rule(
 
 # ─── Top-level orchestration ───────────────────────────────────────────────────
 
+
 def scan(repo_root: Path, policy: dict) -> ScanResult:
     skip_dirs = set(DEFAULT_SKIP_DIRS)
     result = ScanResult(
@@ -333,7 +360,9 @@ def write_json_report(result: ScanResult, out_path: Path) -> None:
         "findings": [f.to_dict() for f in result.findings],
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(payload, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+    out_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=False) + "\n", encoding="utf-8"
+    )
 
 
 def write_markdown_report(result: ScanResult, out_path: Path) -> None:
@@ -381,6 +410,7 @@ def write_markdown_report(result: ScanResult, out_path: Path) -> None:
 
 # ─── CLI ───────────────────────────────────────────────────────────────────────
 
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Scan a repo for legacy-tooling anti-patterns."
@@ -405,14 +435,23 @@ def main(argv: list[str]) -> int:
 
     try:
         policy = load_policy(policy_path)
-    except (FileNotFoundError, ValueError) as e:
+    except (FileNotFoundError, ValueError, TypeError) as e:
         print(f"error: failed to load policy: {e}", file=sys.stderr)
+        return 2
+
+    output_paths = [Path(args.output_json).resolve(), Path(args.output_md).resolve()]
+    if any(
+        not output.is_relative_to(repo_root)
+        or (output.exists() and not output.is_file())
+        for output in output_paths
+    ):
+        print("error: report outputs must remain within repo-root", file=sys.stderr)
         return 2
 
     policy["_path"] = str(policy_path)
     result = scan(repo_root, policy)
-    write_json_report(result, Path(args.output_json))
-    write_markdown_report(result, Path(args.output_md))
+    write_json_report(result, output_paths[0])
+    write_markdown_report(result, output_paths[1])
 
     summary = (
         f"scanned={result.files_scanned} "

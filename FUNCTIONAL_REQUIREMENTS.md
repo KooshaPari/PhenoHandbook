@@ -136,6 +136,19 @@ PhenoHandbook is a living documentation repository for design patterns, anti-pat
 
 ---
 
+### FR-PH-009: Scanner Unreadable-File Handling
+
+**Description:** Preserve the legacy-tooling scanner's unreadable-file contract.
+
+**Acceptance Criteria:**
+- Files that cannot be decoded as UTF-8 are recorded in `skipped_files`.
+- Skipped files do not generate policy findings or increment `files_scanned`.
+- Readable UTF-8 files continue to be scanned against the configured rules.
+
+**Related Tests:** `tooling/legacy-enforcement/scanner/test_legacy_tooling_scanner.py`
+
+---
+
 ## Test Traceability
 
 All FRs MUST have corresponding validation:

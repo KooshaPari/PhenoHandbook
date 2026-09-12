@@ -44,15 +44,9 @@ The `HubGenerator` class is the main entry point:
 from docs_engine.hub.generator import HubGenerator
 from pathlib import Path
 
-projects = {
-    "thegent": "/path/to/thegent/docs",
-    "pheno-sdk": "/path/to/pheno-sdk/docs"
-}
+projects = {"thegent": "/path/to/thegent/docs", "pheno-sdk": "/path/to/pheno-sdk/docs"}
 
-gen = HubGenerator(
-    hub_dir=Path("phenodocs"),
-    projects=projects
-)
+gen = HubGenerator(hub_dir=Path("phenodocs"), projects=projects)
 gen.generate()
 ```
 

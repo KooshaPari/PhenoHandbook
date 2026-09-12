@@ -378,12 +378,14 @@ from enum import Enum, auto
 from typing import Callable, TypeVar, Optional, List
 from functools import wraps
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class CircuitState(Enum):
-    CLOSED = auto()      # Normal operation
-    OPEN = auto()        # Failing fast
-    HALF_OPEN = auto()   # Testing recovery
+    CLOSED = auto()  # Normal operation
+    OPEN = auto()  # Failing fast
+    HALF_OPEN = auto()  # Testing recovery
+
 
 @dataclass
 class CircuitBreakerConfig:
@@ -392,19 +394,21 @@ class CircuitBreakerConfig:
     success_threshold: int = 3
     failure_window: float = 60.0  # seconds
 
+
 @dataclass
 class CircuitMetrics:
     failures: List[float] = field(default_factory=list)
     successes: List[float] = field(default_factory=list)
-    
+
     def clean_old(self, window: float):
         cutoff = time.time() - window
         self.failures = [t for t in self.failures if t > cutoff]
         self.successes = [t for t in self.successes if t > cutoff]
 
+
 class CircuitBreaker:
     """Circuit breaker for protecting external calls."""
-    
+
     def __init__(self, name: str, config: CircuitBreakerConfig = None):
         self.name = name
         self.config = config or CircuitBreakerConfig()
@@ -413,13 +417,13 @@ class CircuitBreaker:
         self._half_open_attempts = 0
         self._metrics = CircuitMetrics()
         self._lock = asyncio.Lock()
-    
+
     async def call(self, operation: Callable[..., T], *args, **kwargs) -> T:
         """Execute operation with circuit breaker protection."""
-        
+
         async with self._lock:
             await self._check_state()
-        
+
         try:
             result = await operation(*args, **kwargs)
             await self._on_success()
@@ -427,30 +431,35 @@ class CircuitBreaker:
         except Exception as e:
             await self._on_failure()
             raise CircuitBreakerError(f"Circuit open for {self.name}") from e
-    
+
     async def _check_state(self):
         """Check if operation should be allowed."""
         now = time.time()
-        
+
         if self._state == CircuitState.OPEN:
-            if self._last_failure and (now - self._last_failure) >= self.config.reset_timeout:
+            if (
+                self._last_failure
+                and (now - self._last_failure) >= self.config.reset_timeout
+            ):
                 self._state = CircuitState.HALF_OPEN
                 self._half_open_attempts = 0
                 print(f"[{self.name}] Entering half-open state")
             else:
                 raise CircuitBreakerError(f"Circuit {self.name} is OPEN")
-        
+
         elif self._state == CircuitState.HALF_OPEN:
             if self._half_open_attempts >= self.config.success_threshold:
-                raise CircuitBreakerError(f"Circuit {self.name} is OPEN (half-open limit)")
+                raise CircuitBreakerError(
+                    f"Circuit {self.name} is OPEN (half-open limit)"
+                )
             self._half_open_attempts += 1
-    
+
     async def _on_success(self):
         """Handle successful operation."""
         async with self._lock:
             now = time.time()
             self._metrics.successes.append(now)
-            
+
             if self._state == CircuitState.HALF_OPEN:
                 if self._half_open_attempts >= self.config.success_threshold:
                     self._state = CircuitState.CLOSED
@@ -460,18 +469,18 @@ class CircuitBreaker:
                     print(f"[{self.name}] Circuit CLOSED after recovery")
             elif self._state == CircuitState.CLOSED:
                 self._metrics.clean_old(self.config.failure_window)
-    
+
     async def _on_failure(self):
         """Handle failed operation."""
         async with self._lock:
             now = time.time()
             self._metrics.failures.append(now)
             self._last_failure = now
-            
+
             if self._state == CircuitState.CLOSED:
                 self._metrics.clean_old(self.config.failure_window)
                 recent_failures = len(self._metrics.failures)
-                
+
                 if recent_failures >= self.config.failure_threshold:
                     self._state = CircuitState.OPEN
                     print(f"[{self.name}] Circuit OPENED ({recent_failures} failures)")
@@ -479,30 +488,35 @@ class CircuitBreaker:
                 self._state = CircuitState.OPEN
                 self._half_open_attempts = 0
                 print(f"[{self.name}] Circuit re-OPENED after half-open failure")
-    
+
     @property
     def state(self) -> CircuitState:
         return self._state
-    
+
     def get_metrics(self) -> dict:
         return {
-            'state': self._state.name,
-            'failures': len(self._metrics.failures),
-            'successes': len(self._metrics.successes),
-            'last_failure': self._last_failure,
+            "state": self._state.name,
+            "failures": len(self._metrics.failures),
+            "successes": len(self._metrics.successes),
+            "last_failure": self._last_failure,
         }
+
 
 class CircuitBreakerError(Exception):
     pass
 
+
 # Decorator version
 def circuit_breaker(breaker: CircuitBreaker):
     """Decorator for circuit breaker protection."""
+
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             return await breaker.call(func, *args, **kwargs)
+
         return wrapper
+
     return decorator
 ```
 

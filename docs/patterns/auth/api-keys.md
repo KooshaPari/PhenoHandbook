@@ -221,12 +221,14 @@ import hashlib
 import hmac
 from dataclasses import dataclass, asdict
 
+
 @dataclass
 class ApiKeyMetadata:
     name: str
     owner: str
     service: str
     rate_limit: int = 100  # requests per minute
+
 
 @dataclass
 class ApiKey:
@@ -241,32 +243,33 @@ class ApiKey:
     revoked: bool
     metadata: ApiKeyMetadata
 
+
 class ApiKeyService:
     def __init__(self, db, cache):
         self._db = db
         self._cache = cache
-    
+
     def generate_key(
         self,
         metadata: ApiKeyMetadata,
         environment: str = "live",
         scope: List[str] = None,
-        expires_days: Optional[int] = None
+        expires_days: Optional[int] = None,
     ) -> tuple[str, ApiKey]:
         """Generate new API key. Returns (plaintext_key, api_key_record)."""
-        
+
         # Generate secure random string
         random_part = secrets.token_urlsafe(18)[:24]
         key = f"pheno_{environment}_{random_part}"
-        
+
         prefix = key[:16]
         key_hash = self._hash_key(key)
         key_id = f"{prefix}_{key_hash[:8]}"
-        
+
         expires_at = None
         if expires_days:
             expires_at = datetime.utcnow() + timedelta(days=expires_days)
-        
+
         api_key = ApiKey(
             id=key_id,
             prefix=prefix,
@@ -277,72 +280,68 @@ class ApiKeyService:
             expires_at=expires_at,
             last_used=None,
             revoked=False,
-            metadata=metadata
+            metadata=metadata,
         )
-        
+
         # Store in database
         self._db.store(asdict(api_key))
-        
+
         # Cache for fast lookup
         self._cache.set(key_id, api_key, ttl=3600)
-        
+
         # Return plaintext (shown only once)
         return key, api_key
-    
+
     def validate_key(self, key: str) -> ApiKey:
         """Validate API key from request header."""
-        
+
         # Validate format
-        parts = key.split('_')
-        if len(parts) != 3 or parts[0] != 'pheno':
+        parts = key.split("_")
+        if len(parts) != 3 or parts[0] != "pheno":
             raise AuthenticationError("Invalid API key format")
-        
+
         environment, random_part = parts[1], parts[2]
-        
+
         if len(random_part) != 24:
             raise AuthenticationError("Invalid API key length")
-        
+
         # Compute hash
         key_hash = self._hash_key(key)
         prefix = f"pheno_{environment}_{random_part[:8]}"
         key_id = f"{prefix}_{key_hash[:8]}"
-        
+
         # Check cache
         cached = self._cache.get(key_id)
         if cached:
             return self._validate_cached(cached)
-        
+
         # Check database
         record = self._db.get(key_id)
         if not record:
             raise AuthenticationError("API key not found")
-        
+
         api_key = ApiKey(**record)
         return self._validate_cached(api_key)
-    
+
     def _hash_key(self, key: str) -> str:
         """Hash API key with pepper."""
         pepper = b"phenotype-key-salt-v1"
-        return hmac.new(
-            pepper,
-            key.encode(),
-            hashlib.sha256
-        ).hexdigest()
-    
+        return hmac.new(pepper, key.encode(), hashlib.sha256).hexdigest()
+
     def _validate_cached(self, api_key: ApiKey) -> ApiKey:
         """Validate cached/decoded API key."""
-        
+
         if api_key.revoked:
             raise AuthenticationError("API key revoked")
-        
+
         if api_key.expires_at and datetime.utcnow() > api_key.expires_at:
             raise AuthenticationError("API key expired")
-        
+
         # Update last used
         self._db.update_last_used(api_key.id, datetime.utcnow())
-        
+
         return api_key
-    
+
     def revoke_key(self, key_id: str):
         """Revoke API key."""
         self._db.revoke(key_id)
@@ -358,14 +357,17 @@ class BadStorage:
     def store(self, key: str):  # WRONG
         self.db.insert({"api_key": key})
 
+
 # ✅ Store only hashed keys
 class GoodStorage:
     def store(self, api_key: ApiKey):  # RIGHT
-        self.db.insert({
-            "id": api_key.id,
-            "hash": api_key.hash,  # SHA-256 + pepper
-            "prefix": api_key.prefix  # For display only
-        })
+        self.db.insert(
+            {
+                "id": api_key.id,
+                "hash": api_key.hash,  # SHA-256 + pepper
+                "prefix": api_key.prefix,  # For display only
+            }
+        )
 ```
 
 ### 2. Rate Limiting
@@ -398,25 +400,22 @@ pub async fn check_rate_limit(
 class KeyRotationService:
     async def rotate_key(self, old_key_id: str) -> tuple[str, ApiKey]:
         """Rotate API key while preserving permissions."""
-        
+
         # Get old key permissions
         old_key = self.service.get_key(old_key_id)
-        
+
         # Generate new key with same scope
         new_key, new_record = self.service.generate_key(
             metadata=old_key.metadata,
             environment=old_key.environment,
             scope=old_key.scope,
-            expires_days=365
+            expires_days=365,
         )
-        
+
         # Schedule old key expiration (grace period)
         grace_period = timedelta(days=7)
-        self.service.schedule_revocation(
-            old_key_id, 
-            datetime.utcnow() + grace_period
-        )
-        
+        self.service.schedule_revocation(old_key_id, datetime.utcnow() + grace_period)
+
         return new_key, new_record
 ```
 

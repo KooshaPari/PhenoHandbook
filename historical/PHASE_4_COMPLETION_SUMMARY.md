@@ -128,7 +128,7 @@ config = routing_manager.create_default_config(
     project_name="api-project",
     domain="api.example.com",
     base_path="/api/v1",
-    services=[{"name": "users", "port": 8001}]
+    services=[{"name": "users", "port": 8001}],
 )
 
 # Add routes
@@ -171,9 +171,11 @@ config_manager.enable_maintenance(
 health_dashboard = HealthDashboard()
 await health_dashboard.initialize()
 
+
 # Register health checkers
 async def api_health_check():
     return True
+
 
 health_dashboard.register_health_checker("api-service", api_health_check)
 

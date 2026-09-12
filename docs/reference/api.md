@@ -31,8 +31,8 @@ gen = HubGenerator(
     hub_dir=Path("./phenodocs"),
     projects={
         "thegent": "/workspace/thegent/docs",
-        "pheno-sdk": "/workspace/pheno-sdk/docs"
-    }
+        "pheno-sdk": "/workspace/pheno-sdk/docs",
+    },
 )
 ```
 
@@ -164,8 +164,7 @@ from pathlib import Path
 
 try:
     gen = HubGenerator(
-        hub_dir=Path("./phenodocs"),
-        projects={"test": "/nonexistent/path"}
+        hub_dir=Path("./phenodocs"), projects={"test": "/nonexistent/path"}
     )
     gen.generate()
 except FileNotFoundError as e:
